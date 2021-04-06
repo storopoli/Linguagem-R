@@ -17,3 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 <link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/>
+
+```{r ggplot2, echo=FALSE, fig.align='center', fig.cap='Crie sua Obra-Prima!'}
+knitr::include_graphics("images/ggplot2_obra_prima_pt.png")
+```

@@ -20,6 +20,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Bem vindos à disciplina!
 
+```{r welcome, echo=FALSE, fig.align='center', fig.cap='Bem-vindo!'}
+knitr::include_graphics("images/bem_vindos_rtwitter.png")
+```
+
 ## Conteúdos
 
 Vamos usar todo o universo do [`{tidyverse}`](https://www.tidyverse.org)!
