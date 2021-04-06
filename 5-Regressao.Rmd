@@ -1,0 +1,19 @@
+---
+title: "Regressão Linear e Regressão Logística"
+description: "lm e glm"
+author:
+  - name: Jose Storopoli
+    url: https://scholar.google.com/citations?user=xGU7H1QAAAAJ&hl=en
+    affiliation: UNINOVE
+    affiliation_url: https://www.uninove.br
+    orcid_id: 0000-0002-0559-5176
+date: April 19, 2021
+citation_url: https://storopoli.io/Linguagem-R/5-Regressao.html
+slug: storopoli2021regressaoR
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/>

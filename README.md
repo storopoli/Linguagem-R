@@ -28,7 +28,7 @@ português](https://www.amazon.com.br/Para-Data-Science-Hadley-Wickham/dp/855080
 
 <div class="figure" style="text-align: center">
 
-<img src="images/R_for_data_science.jpg" alt="R for Data Science"  />
+<img src="images/R_for_data_science.jpg" alt="R for Data Science" width="333" />
 <p class="caption">
 R for Data Science
 </p>
@@ -59,11 +59,20 @@ Para configurar um ambiente local:
 ## Aulas
 
 -   [**Aula 1 - O que é
-    R?**](https://storopoli.io/Linguagem-R/1-O_que_e_R.html)
--   Aula 2 e 3 — `dplyr` e manipulação de dados
--   Aula 4 e 5 — `ggplot2` e visualização de dados
--   Aula 6 — Programação funcional com `purrr` e `furrr`
--   Aula 7 — Regressão Linear e Regressão Logística
+    R?**](https://storopoli.io/Linguagem-R/1-O_que_e_R.html): Tipos de
+    Varíaveis, Estrutura de Dados, RStudio e Rmarkdown.
+-   [**Aulas 2 e 3 — Manipulação de
+    Dados**](https://storopoli.io/Linguagem-R/2-Manipulacao_Dados.html):
+    `dplyr`, `readr`, `tidyr` e `stringr`.
+-   [**Aulas 4 e 5 — Visualização de
+    Dados**](https://storopoli.io/Linguagem-R/3-Visualizacao_Dados.html):
+    `ggplot2`, `scales`, `patchwork`, e mais.
+-   [**Aulas 6 — Programação
+    Funcional**](https://storopoli.io/Linguagem-R/4-Programacao_Funcional.html):
+    `purrr` e `furrr`.
+-   [**Aula 7 — Regressão Linear e Regressão
+    Logística**](https://storopoli.io/Linguagem-R/5-Regressao.html):
+    `lm` e `glm`.
 
 ## Como citar esse conteúdo
 

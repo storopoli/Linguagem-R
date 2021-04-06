@@ -36,7 +36,7 @@ Vamos usar todo o universo do [`{tidyverse}`](https://www.tidyverse.org)!
 
 ## O que é R?
 
-R vem da linguagem S que é uma linguagem estatística desenvolvida na Bell Labs na década de 1970s. E R é o "filho" *opensource* do S. 
+R vem da linguagem S que é uma linguagem estatística desenvolvida na Bell Labs na década de 1970s. E R é o "filho" *opensource* do S.
 
 Rmarkdown é uma boa combinação de gráficos, narrativa e código. Veja o exemplo da figura abaixo.
 
@@ -73,12 +73,12 @@ is.numeric(1)
 > OBS: Para designar podemos usar o `x = valor`, mas usamos o `<-` pois não permite equivalência ela assinala tudo que está a direita da flecha para a variável à esquerda da flecha. Ex `x <- valor` (similar ao `x := valor`). Inclusive `alt` + `-` gera um `<-` com um whitespace ao redor.
 
 ```{r vetores}
-vetor_integer <- c(1L,7L:9L)
+vetor_integer <- c(1L, 7L:9L)
 vetor_integer
 typeof(vetor_integer)
 is.numeric(vetor_integer)
 
-vetor_doubles <- c(1,7:9)
+vetor_doubles <- c(1, 7:9)
 vetor_doubles
 typeof(vetor_doubles)
 is.numeric(vetor_doubles)
@@ -177,14 +177,14 @@ tbl_complexa <- tibble(
   altura_cm = rnorm(100, mean = 165, sd = 10),
   peso_kg = rnorm(100, mean = 70, sd = 10),
   IMC = peso_kg / (altura_cm ^ 2),
-  glicose = rexp(100, rate = IMC/10)
+  glicose = rexp(100, rate = IMC / 10)
 )
 tbl_complexa
 ```
 
 ## Vetores Especiais -- `factor`
 
-`factor` são fatores, que para "estatísticos" é variávels qualitativas (veja o caso da ANOVA).
+`factor` são fatores, que para "estatísticos" é variáveis qualitativas (veja o caso da ANOVA).
 
 `factor` é especial pq ele no fundo é um vetor de `integer` sendo que cada `integer` é uma categoria diferentes.
 
