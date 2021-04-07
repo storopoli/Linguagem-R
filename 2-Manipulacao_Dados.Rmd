@@ -21,3 +21,58 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r tidy-data, echo=FALSE, fig.align='center', fig.cap='Tidy Data'}
 knitr::include_graphics("images/tidydata_1.jpg")
 ```
+
+## O que é *Tidy Data*?
+
+## O pipe `%>%`
+
+## Como ler dados com o `{readr}`
+
+Vamos começar com o primeiro passo da análise de dados: a importação dos dados.
+
+Para isso o [`{tidyverse}`](https://www.tidyverse.org) possui um pacote chamado [`{readr}`](https://readr.tidyverse.org/).
+
+* `read_csv()`:
+* `read_csv2()`:
+* `read_tsv()`:
+* `read_delim()`
+
+Na pasta `datasets/` temos diversos datasets interessantes:
+
+* [`adult.csv`](https://archive.ics.uci.edu/ml/datasets/Adult)
+* [`countries_of_the_world.csv`](https://www.kaggle.com/fernandol/countries-of-the-world)
+* [`covid_19_data.csv`](https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset#covid_19_data.csv): versão 147 de 27/02/2021.
+
+### `col_types` -- O argumento que eu mais uso em `read_*()`
+
+## Manipulação de dados com o [`{dplyr}`](https://dplyr.tidyverse.org/)
+
+```{r dplyr-image, echo=FALSE, fig.align='center', fig.cap='dplyr'}
+knitr::include_graphics("images/dplyr_wrangling.png")
+```
+
+### Manipular Variáveis -- `dplyr::mutate()`
+
+### Selecionar Variáveis -- `dplyr::select()`
+
+### Agrupar e Sumarizar Variáveis -- `dplyr::group_by()` e `dplyr::summarise()`
+
+> OBS: participação especial do [`{stringr}`](https://stringr.tidyverse.org/)
+
+## Mais transformações para formato `Tidy Data` com [`{tidyr}`](https://tidyr.tidyverse.org/)
+
+Em especial temos as funções `pivot_longer()` e `pivot_wider()`:
+
+* *Dataset* `tidyr::relig_income`
+* *Dataset* `tidyr::billboard`
+* *Dataset* `tidyr::fish_encounters`
+
+Além do `unnest_wider()` e `unnest_longer()`:
+
+* *Dataset* `repurrrsive::got_chars`
+
+## Extras
+
+### Converter verbos `{dplyr}` em SQL com o [`{dbplyr}`](https://dbplyr.tidyverse.org/)
+
+### Big Data com [`{arrow}`](https://arrow.apache.org/docs/r/)
