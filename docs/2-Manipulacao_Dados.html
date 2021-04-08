@@ -2429,16 +2429,406 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 </div>
 
 <div class="d-article">
+<div class="d-contents d-contents-float">
+<nav class="l-text toc figcaption" id="TOC">
+<h3>Contents</h3>
+<ul>
+<li><a href="#o-que-é-tidy-data">O que é <em>Tidy Data</em>?</a></li>
+<li><a href="#o-pipe">O pipe <code>%&gt;%</code></a></li>
+<li><a href="#como-ler-dados-com-o-readr">Como ler dados com o <code>{readr}</code></a>
+<ul>
+<li><a href="#col_types-o-argumento-que-eu-mais-uso-em-read_"><code>col_types</code> – O argumento que eu mais uso em <code>read_*()</code></a></li>
+</ul></li>
+<li><a href="#manipulação-de-dados-com-o-dplyr">Manipulação de dados com o <span><code>{dplyr}</code></span></a>
+<ul>
+<li><a href="#selecionar-variáveis-dplyrselect">Selecionar Variáveis – <code>dplyr::select()</code></a></li>
+<li><a href="#manipular-variáveis-dplyrmutate">Manipular Variáveis – <code>dplyr::mutate()</code></a></li>
+<li><a href="#agrupar-e-sumarizar-variáveis-dplyrgroup_by-e-dplyrsummarise">Agrupar e Sumarizar Variáveis – <code>dplyr::group_by()</code> e <code>dplyr::summarise()</code></a></li>
+<li><a href="#joins-com-dplyrjoin">Joins com <code>dplyr::join*</code></a></li>
+</ul></li>
+<li><a href="#mais-transformações-para-formato-tidy-data-com-tidyr">Mais transformações para formato <code>Tidy Data</code> com <span><code>{tidyr}</code></span></a></li>
+<li><a href="#extras">Extras</a>
+<ul>
+<li><a href="#converter-verbos-dplyr-em-sql-com-o-dbplyr">Converter verbos <code>{dplyr}</code> em SQL com o <span><code>{dbplyr}</code></span></a></li>
+<li><a href="#big-data-com-arrow">Big Data com <span><code>{arrow}</code></span></a></li>
+</ul></li>
+<li><a href="#ambiente">Ambiente</a></li>
+</ul>
+</nav>
+</div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure" style="text-align: center"><span id="fig:tidy-data"></span>
-<img src="images/tidydata_1.jpg" alt="Tidy Data" width="2400" />
+<img src="images/tidydata_1.jpg" alt="Tidy Data"  />
 <p class="caption">
 Figure 1: Tidy Data
 </p>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h2 id="o-que-é-tidy-data">O que é <em>Tidy Data</em>?</h2>
+<ul>
+<li>cada variável uma coluna</li>
+<li>cada observação uma linha</li>
+<li>cada célula uma mensuração única</li>
+</ul>
+<h2 id="o-pipe">O pipe <code>%&gt;%</code></h2>
+<p><code>x %&gt;% f(y)</code> vira <code>f(x, y)</code></p>
+<p><code>x %&gt;% f(y) %&gt;% f(z)</code> vira <code>f(f(x, y), z)</code></p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
+
+<span class='co'># atalho é CTRL + SHIFT + M</span>
+
+<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span><span class='op'>:</span><span class='fl'>10</span>, <span class='cn'>NA</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span>na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/base/message.html'>message</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/base/message.html'>message</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[1] 5</code></pre>
+</div>
+<h2 id="como-ler-dados-com-o-readr">Como ler dados com o <code>{readr}</code></h2>
+<p>Vamos começar com o primeiro passo da análise de dados: a importação dos dados.</p>
+<p>Para isso o <a href="https://www.tidyverse.org"><code>{tidyverse}</code></a> possui um pacote chamado <a href="https://readr.tidyverse.org/"><code>{readr}</code></a>.</p>
+<ul>
+<li><code>read_csv()</code>: CSV padrão americano</li>
+<li><code>read_csv2()</code>: CSV padrão europeu/brasileiro</li>
+<li><code>read_tsv()</code>: TSV</li>
+<li><code>read_delim()</code>: Coringa</li>
+</ul>
+<p>Na pasta <code>datasets/</code> temos diversos datasets interessantes:</p>
+<ul>
+<li><a href="https://archive.ics.uci.edu/ml/datasets/Adult"><code>adult.csv</code></a></li>
+<li><a href="https://www.kaggle.com/fernandol/countries-of-the-world"><code>countries_of_the_world.csv</code></a></li>
+<li><a href="https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset#covid_19_data.csv"><code>covid_19_data.csv</code></a>: versão 147 de 27/02/2021.</li>
+</ul>
+<p>Se vocês quiserem ler arquivos <code>.xlsx</code> ou <code>.xls</code> usem o pacote <a href="https://readxl.tidyverse.org/"><code>{readxl}</code></a></p>
+<h3 id="col_types-o-argumento-que-eu-mais-uso-em-read_"><code>col_types</code> – O argumento que eu mais uso em <code>read_*()</code></h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://readr.tidyverse.org'>readr</a></span><span class='op'>)</span>
+<span class='va'>adult</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/adult.csv"</span>,
+                  col_types <span class='op'>=</span> <span class='st'>"_iffifffif"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>countries</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/countries_of_the_world.csv"</span>, 
+    col_types <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/cols.html'>cols</a></span><span class='op'>(</span>Population <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/parse_atomic.html'>col_integer</a></span><span class='op'>(</span><span class='op'>)</span>, 
+        `Net migration` <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/parse_atomic.html'>col_double</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>, 
+    locale <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/locale.html'>locale</a></span><span class='op'>(</span>decimal_mark <span class='op'>=</span> <span class='st'>","</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>covid</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/covid_19_data.csv"</span>, 
+    col_types <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/cols.html'>cols</a></span><span class='op'>(</span>SNo <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/col_skip.html'>col_skip</a></span><span class='op'>(</span><span class='op'>)</span>, ObservationDate <span class='op'>=</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/parse_datetime.html'>col_date</a></span><span class='op'>(</span>format <span class='op'>=</span> <span class='st'>"%m/%d/%Y"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<h2 id="manipulação-de-dados-com-o-dplyr">Manipulação de dados com o <a href="https://dplyr.tidyverse.org/"><code>{dplyr}</code></a></h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure" style="text-align: center"><span id="fig:dplyr-image"></span>
+<img src="images/dplyr_wrangling.png" alt="dplyr" width="956" />
+<p class="caption">
+Figure 2: dplyr
+</p>
+</div>
+</div>
+<h3 id="selecionar-variáveis-dplyrselect">Selecionar Variáveis – <code>dplyr::select()</code></h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
+<span class='va'>adult_clean</span> <span class='op'>&lt;-</span> <span class='va'>adult</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>age</span>, <span class='va'>workclass</span>, <span class='va'>education</span>,
+         education_num <span class='op'>=</span> <span class='va'>`educational-num`</span>,
+         marital_status <span class='op'>=</span> <span class='va'>`marital-status`</span>,
+         <span class='va'>race</span>, <span class='va'>gender</span>,
+         hours_per_week <span class='op'>=</span> <span class='va'>`hours-per-week`</span>,
+         <span class='va'>income</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<blockquote>
+<p>OBS: Tem a função <code>rename_with</code> do <code>{dplyr}</code> versão 1.0.</p>
+</blockquote>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>adult</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename_with</a></span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/grep.html'>gsub</a></span><span class='op'>(</span><span class='st'>"-"</span>, <span class='st'>"_"</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 48,842 x 9
+     age workclass    education  educational_num marital_status  race 
+   &lt;int&gt; &lt;fct&gt;        &lt;fct&gt;                &lt;int&gt; &lt;fct&gt;           &lt;fct&gt;
+ 1    25 Private      11th                     7 Never-married   Black
+ 2    38 Private      HS-grad                  9 Married-civ-sp… White
+ 3    28 Local-gov    Assoc-acdm              12 Married-civ-sp… White
+ 4    44 Private      Some-coll…              10 Married-civ-sp… Black
+ 5    18 ?            Some-coll…              10 Never-married   White
+ 6    34 Private      10th                     6 Never-married   White
+ 7    29 ?            HS-grad                  9 Never-married   Black
+ 8    63 Self-emp-no… Prof-scho…              15 Married-civ-sp… White
+ 9    24 Private      Some-coll…              10 Never-married   White
+10    55 Private      7th-8th                  4 Married-civ-sp… White
+# … with 48,832 more rows, and 3 more variables: gender &lt;fct&gt;,
+#   hours_per_week &lt;int&gt;, income &lt;fct&gt;</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>adult</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename_with</a></span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/grep.html'>gsub</a></span><span class='op'>(</span><span class='st'>"-"</span>, <span class='st'>"_"</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='fu'>where</span><span class='op'>(</span><span class='va'>is.factor</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>workclass</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select_all.html'>rename_all</a></span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>"antigo_"</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 48,842 x 5
+   antigo_education antigo_marital_status antigo_race antigo_gender
+   &lt;fct&gt;            &lt;fct&gt;                 &lt;fct&gt;       &lt;fct&gt;        
+ 1 11th             Never-married         Black       Male         
+ 2 HS-grad          Married-civ-spouse    White       Male         
+ 3 Assoc-acdm       Married-civ-spouse    White       Male         
+ 4 Some-college     Married-civ-spouse    Black       Male         
+ 5 Some-college     Never-married         White       Female       
+ 6 10th             Never-married         White       Male         
+ 7 HS-grad          Never-married         Black       Male         
+ 8 Prof-school      Married-civ-spouse    White       Male         
+ 9 Some-college     Never-married         White       Female       
+10 7th-8th          Married-civ-spouse    White       Male         
+# … with 48,832 more rows, and 1 more variable: antigo_income &lt;fct&gt;</code></pre>
+</div>
+<blockquote>
+<p>Professor eu gosto de camelCase e agora?</p>
+</blockquote>
+<p>Não tema, tem o pacote <a href="https://garthtarr.github.io/meatR/janitor.html"><code>{janitor}</code></a></p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/sfirke/janitor'>janitor</a></span><span class='op'>)</span>
+<span class='va'>adult</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/pkg/janitor/man/clean_names.html'>clean_names</a></span><span class='op'>(</span>case <span class='op'>=</span> <span class='st'>"lower_camel"</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 48,842 x 9
+     age workclass education educationalNum maritalStatus race  gender
+   &lt;int&gt; &lt;fct&gt;     &lt;fct&gt;              &lt;int&gt; &lt;fct&gt;         &lt;fct&gt; &lt;fct&gt; 
+ 1    25 Private   11th                   7 Never-married Black Male  
+ 2    38 Private   HS-grad                9 Married-civ-… White Male  
+ 3    28 Local-gov Assoc-ac…             12 Married-civ-… White Male  
+ 4    44 Private   Some-col…             10 Married-civ-… Black Male  
+ 5    18 ?         Some-col…             10 Never-married White Female
+ 6    34 Private   10th                   6 Never-married White Male  
+ 7    29 ?         HS-grad                9 Never-married Black Male  
+ 8    63 Self-emp… Prof-sch…             15 Married-civ-… White Male  
+ 9    24 Private   Some-col…             10 Never-married White Female
+10    55 Private   7th-8th                4 Married-civ-… White Male  
+# … with 48,832 more rows, and 2 more variables: hoursPerWeek &lt;int&gt;,
+#   income &lt;fct&gt;</code></pre>
+</div>
+<h4 id="ordenar-variáveis-com-dplyrarrange">Ordenar variáveis com <code>dplyr::arrange()</code></h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>adult_clean</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>age</span>, <span class='va'>education_num</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>age</span>, <span class='va'>education_num</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 48,842 x 2
+     age education_num
+   &lt;int&gt;         &lt;int&gt;
+ 1    90             2
+ 2    90             4
+ 3    90             4
+ 4    90             4
+ 5    90             5
+ 6    90             6
+ 7    90             6
+ 8    90             7
+ 9    90             7
+10    90             9
+# … with 48,832 more rows</code></pre>
+</div>
+<h4 id="frequencias-com-dplyrcount">Frequencias com <code>dplyr::count()</code></h4>
+<blockquote>
+<p>OBS: vamos ver muito essa função quando falarmos de <code>group_by()</code></p>
+</blockquote>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>adult_clean</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>age</span>, <span class='va'>income</span>, sort <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 142 x 3
+     age income     n
+   &lt;int&gt; &lt;fct&gt;  &lt;int&gt;
+ 1    23 &lt;=50K   1307
+ 2    24 &lt;=50K   1162
+ 3    22 &lt;=50K   1161
+ 4    25 &lt;=50K   1119
+ 5    27 &lt;=50K   1117
+ 6    20 &lt;=50K   1112
+ 7    28 &lt;=50K   1101
+ 8    21 &lt;=50K   1090
+ 9    26 &lt;=50K   1068
+10    19 &lt;=50K   1050
+# … with 132 more rows</code></pre>
+</div>
+<h3 id="manipular-variáveis-dplyrmutate">Manipular Variáveis – <code>dplyr::mutate()</code></h3>
+<blockquote>
+<p>Odeio potência de 10</p>
+</blockquote>
+<p>use <code>options(scipen = 999, digits = 2)</code></p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>scipen <span class='op'>=</span> <span class='fl'>999</span>, digits <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+<span class='va'>countries</span> <span class='op'>&lt;-</span> <span class='va'>countries</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/pkg/janitor/man/clean_names.html'>clean_names</a></span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='va'>countries</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>
+    log_pop <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>population</span><span class='op'>)</span>,
+    area_sq_km <span class='op'>=</span> <span class='va'>area_sq_mi</span> <span class='op'>*</span> <span class='fl'>2.5899985</span>,
+    pop_density_per_sq_km <span class='op'>=</span> <span class='va'>population</span> <span class='op'>/</span> <span class='va'>area_sq_km</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 227 x 23
+   country      region        population area_sq_mi pop_density_per_s…
+   &lt;chr&gt;        &lt;chr&gt;              &lt;int&gt;      &lt;dbl&gt;              &lt;dbl&gt;
+ 1 Afghanistan  ASIA (EX. NE…   31056997     647500               48  
+ 2 Albania      EASTERN EURO…    3581655      28748              125. 
+ 3 Algeria      NORTHERN AFR…   32930091    2381740               13.8
+ 4 American Sa… OCEANIA            57794        199              290. 
+ 5 Andorra      WESTERN EURO…      71201        468              152. 
+ 6 Angola       SUB-SAHARAN …   12127071    1246700                9.7
+ 7 Anguilla     LATIN AMER. …      13477        102              132. 
+ 8 Antigua &amp; B… LATIN AMER. …      69108        443              156  
+ 9 Argentina    LATIN AMER. …   39921833    2766890               14.4
+10 Armenia      C.W. OF IND.…    2976372      29800               99.9
+# … with 217 more rows, and 18 more variables:
+#   coastline_coast_area_ratio &lt;dbl&gt;, net_migration &lt;dbl&gt;,
+#   infant_mortality_per_1000_births &lt;dbl&gt;, gdp_per_capita &lt;dbl&gt;,
+#   literacy_percent &lt;dbl&gt;, phones_per_1000 &lt;dbl&gt;,
+#   arable_percent &lt;dbl&gt;, crops_percent &lt;dbl&gt;, other_percent &lt;dbl&gt;,
+#   climate &lt;dbl&gt;, birthrate &lt;dbl&gt;, deathrate &lt;dbl&gt;,
+#   agriculture &lt;dbl&gt;, industry &lt;dbl&gt;, service &lt;dbl&gt;, log_pop &lt;dbl&gt;,
+#   area_sq_km &lt;dbl&gt;, pop_density_per_sq_km &lt;dbl&gt;</code></pre>
+</div>
+<p>O mutate ele altera variáveis <em>in-place</em> ou adiciona novas variáveis preservando as existentes. Mas temos também o <code>transmute</code> adiciona novas variáveis e <em>dropa</em> todas as demais.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>countries</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>transmute</a></span><span class='op'>(</span>
+    log_pop <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>population</span><span class='op'>)</span>,
+    area_sq_km <span class='op'>=</span> <span class='va'>area_sq_mi</span> <span class='op'>*</span> <span class='fl'>2.5899985</span>,
+    pop_density_per_sq_km <span class='op'>=</span> <span class='va'>population</span> <span class='op'>/</span> <span class='va'>area_sq_km</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 227 x 3
+   log_pop area_sq_km pop_density_per_sq_km
+     &lt;dbl&gt;      &lt;dbl&gt;                 &lt;dbl&gt;
+ 1   17.3    1677024.                 18.5 
+ 2   15.1      74457.                 48.1 
+ 3   17.3    6168703.                  5.34
+ 4   11.0        515.                112.  
+ 5   11.2       1212.                 58.7 
+ 6   16.3    3228951.                  3.76
+ 7    9.51       264.                 51.0 
+ 8   11.1       1147.                 60.2 
+ 9   17.5    7166241.                  5.57
+10   14.9      77182.                 38.6 
+# … with 217 more rows</code></pre>
+</div>
+<p>Quase todos os verbos (como vocês viram lá em cima) do <code>{dplyr}</code> tem os sufixos <code>_if</code>, <code>_all</code> e <code>_at</code>. Por exemplo:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>covid</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate_all.html'>mutate_if</a></span><span class='op'>(</span><span class='va'>is.character</span>, <span class='va'>as.factor</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 236,017 x 7
+   ObservationDate `Province/State` `Country/Region` `Last Update`  
+   &lt;date&gt;          &lt;fct&gt;            &lt;fct&gt;            &lt;fct&gt;          
+ 1 2020-01-22      Anhui            Mainland China   1/22/2020 17:00
+ 2 2020-01-22      Beijing          Mainland China   1/22/2020 17:00
+ 3 2020-01-22      Chongqing        Mainland China   1/22/2020 17:00
+ 4 2020-01-22      Fujian           Mainland China   1/22/2020 17:00
+ 5 2020-01-22      Gansu            Mainland China   1/22/2020 17:00
+ 6 2020-01-22      Guangdong        Mainland China   1/22/2020 17:00
+ 7 2020-01-22      Guangxi          Mainland China   1/22/2020 17:00
+ 8 2020-01-22      Guizhou          Mainland China   1/22/2020 17:00
+ 9 2020-01-22      Hainan           Mainland China   1/22/2020 17:00
+10 2020-01-22      Hebei            Mainland China   1/22/2020 17:00
+# … with 236,007 more rows, and 3 more variables: Confirmed &lt;dbl&gt;,
+#   Deaths &lt;dbl&gt;, Recovered &lt;dbl&gt;</code></pre>
+</div>
+<h4 id="dplyrifelse-e-dplyrcase_when"><code>dplyr::ifelse</code> e <code>dplyr::case_when</code></h4>
+<h3 id="agrupar-e-sumarizar-variáveis-dplyrgroup_by-e-dplyrsummarise">Agrupar e Sumarizar Variáveis – <code>dplyr::group_by()</code> e <code>dplyr::summarise()</code></h3>
+<h3 id="joins-com-dplyrjoin">Joins com <code>dplyr::join*</code></h3>
+<blockquote>
+<p>OBS: participação especial do <a href="https://stringr.tidyverse.org/"><code>{stringr}</code></a></p>
+</blockquote>
+<h2 id="mais-transformações-para-formato-tidy-data-com-tidyr">Mais transformações para formato <code>Tidy Data</code> com <a href="https://tidyr.tidyverse.org/"><code>{tidyr}</code></a></h2>
+<p>Em especial temos as funções <code>pivot_longer()</code> e <code>pivot_wider()</code>:</p>
+<ul>
+<li><em>Dataset</em> <code>tidyr::relig_income</code></li>
+<li><em>Dataset</em> <code>tidyr::billboard</code></li>
+<li><em>Dataset</em> <code>tidyr::fish_encounters</code></li>
+</ul>
+<p>Além do <code>unnest_wider()</code> e <code>unnest_longer()</code>:</p>
+<ul>
+<li><em>Dataset</em> <code>repurrrsive::got_chars</code></li>
+</ul>
+<h2 id="extras">Extras</h2>
+<h3 id="converter-verbos-dplyr-em-sql-com-o-dbplyr">Converter verbos <code>{dplyr}</code> em SQL com o <a href="https://dbplyr.tidyverse.org/"><code>{dbplyr}</code></a></h3>
+<h3 id="big-data-com-arrow">Big Data com <a href="https://arrow.apache.org/docs/r/"><code>{arrow}</code></a></h3>
+<h2 id="ambiente">Ambiente</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>R version 4.0.3 (2020-10-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.2 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/atlas/libblas.so.3.10.3
+LAPACK: /usr/lib/x86_64-linux-gnu/atlas/liblapack.so.3.10.3
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C          
+ [3] LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8    
+ [5] LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C             
+ [9] LC_ADDRESS=C           LC_TELEPHONE=C        
+[11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods  
+[7] base     
+
+other attached packages:
+[1] janitor_2.1.0  dplyr_1.0.5    readr_1.4.0    magrittr_2.0.1
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.6        bslib_0.2.4       compiler_4.0.3   
+ [4] pillar_1.5.1      jquerylib_0.1.3   highr_0.8        
+ [7] tools_4.0.3       digest_0.6.27     downlit_0.2.1    
+[10] lubridate_1.7.10  jsonlite_1.7.2    evaluate_0.14    
+[13] lifecycle_1.0.0   tibble_3.1.0      pkgconfig_2.0.3  
+[16] png_0.1-7         rlang_0.4.10      rstudioapi_0.13  
+[19] cli_2.4.0         DBI_1.1.1         distill_1.2      
+[22] yaml_2.2.1        xfun_0.22         stringr_1.4.0    
+[25] knitr_1.31        generics_0.1.0    vctrs_0.3.7      
+[28] sass_0.3.1        hms_1.0.0         tidyselect_1.1.0 
+[31] snakecase_0.11.0  glue_1.4.2        R6_2.5.0         
+[34] fansi_0.4.2       rmarkdown_2.7     purrr_0.3.4      
+[37] ellipsis_0.3.1    htmltools_0.5.1.1 assertthat_0.2.1 
+[40] utf8_1.2.1        stringi_1.5.3     crayon_1.4.1     </code></pre>
+</div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>

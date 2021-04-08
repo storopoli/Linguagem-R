@@ -21,3 +21,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r stats, echo=FALSE, fig.align='center', fig.cap='Stats'}
 knitr::include_graphics("images/not_normal.png")
 ```
+
+
+## Ambiente
+
+```{r sessionInfo}
+sessionInfo()
+```

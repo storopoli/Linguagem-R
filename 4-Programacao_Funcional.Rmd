@@ -21,3 +21,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r map-frosting, echo=FALSE, fig.align='center', fig.cap='Programação Funcional'}
 knitr::include_graphics("images/map_frosting.png")
 ```
+
+## Ambiente
+
+```{r sessionInfo}
+sessionInfo()
+```

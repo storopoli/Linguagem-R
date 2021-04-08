@@ -223,4 +223,3 @@ Exemplo `tibble::as_tibble()`
 ```{r sessionInfo}
 sessionInfo()
 ```
-

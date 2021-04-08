@@ -21,3 +21,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r ggplot2, echo=FALSE, fig.align='center', fig.cap='Crie sua Obra-Prima!'}
 knitr::include_graphics("images/ggplot2_obra_prima_pt.png")
 ```
+
+## Ambiente
+
+```{r sessionInfo}
+sessionInfo()
+```
+

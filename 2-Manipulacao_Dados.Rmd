@@ -24,7 +24,28 @@ knitr::include_graphics("images/tidydata_1.jpg")
 
 ## O que é *Tidy Data*?
 
+* cada variável uma coluna
+* cada observação uma linha
+* cada célula uma mensuração única
+
 ## O pipe `%>%`
+
+`x %>% f(y)` vira `f(x, y)`
+
+
+`x %>% f(y) %>% f(z)` vira `f(f(x, y), z)`
+
+```{r magrittr}
+library(magrittr)
+
+# atalho é CTRL + SHIFT + M
+
+c(0:10, NA) %>%
+  mean(na.rm = TRUE) %>% 
+  print() %>% 
+  message() %>% 
+  message()
+```
 
 ## Como ler dados com o `{readr}`
 
@@ -32,10 +53,10 @@ Vamos começar com o primeiro passo da análise de dados: a importação dos dad
 
 Para isso o [`{tidyverse}`](https://www.tidyverse.org) possui um pacote chamado [`{readr}`](https://readr.tidyverse.org/).
 
-* `read_csv()`:
-* `read_csv2()`:
-* `read_tsv()`:
-* `read_delim()`
+* `read_csv()`: CSV padrão americano
+* `read_csv2()`: CSV padrão europeu/brasileiro
+* `read_tsv()`: TSV
+* `read_delim()`: Coringa
 
 Na pasta `datasets/` temos diversos datasets interessantes:
 
@@ -43,7 +64,27 @@ Na pasta `datasets/` temos diversos datasets interessantes:
 * [`countries_of_the_world.csv`](https://www.kaggle.com/fernandol/countries-of-the-world)
 * [`covid_19_data.csv`](https://www.kaggle.com/sudalairajkumar/novel-corona-virus-2019-dataset#covid_19_data.csv): versão 147 de 27/02/2021.
 
+Se vocês quiserem ler arquivos `.xlsx` ou `.xls` usem o pacote [`{readxl}`](https://readxl.tidyverse.org/)
+
 ### `col_types` -- O argumento que eu mais uso em `read_*()`
+
+```{r readr-adult}
+library(readr)
+adult <- read_csv("datasets/adult.csv",
+                  col_types = "_iffifffif")
+```
+
+```{r readr-countries_of_the_world}
+countries <- read_csv("datasets/countries_of_the_world.csv", 
+    col_types = cols(Population = col_integer(), 
+        `Net migration` = col_double()), 
+    locale = locale(decimal_mark = ","))
+```
+
+```{r readr-covid}
+covid <- read_csv("datasets/covid_19_data.csv", 
+    col_types = cols(SNo = col_skip(), ObservationDate = col_date(format = "%m/%d/%Y")))
+```
 
 ## Manipulação de dados com o [`{dplyr}`](https://dplyr.tidyverse.org/)
 
@@ -51,11 +92,100 @@ Na pasta `datasets/` temos diversos datasets interessantes:
 knitr::include_graphics("images/dplyr_wrangling.png")
 ```
 
-### Manipular Variáveis -- `dplyr::mutate()`
-
 ### Selecionar Variáveis -- `dplyr::select()`
 
+```{r dplyr-select}
+library(dplyr)
+adult_clean <- adult %>% 
+  select(age, workclass, education,
+         education_num = `educational-num`,
+         marital_status = `marital-status`,
+         race, gender,
+         hours_per_week = `hours-per-week`,
+         income)
+```
+
+> OBS: Tem a função `rename_with` do `{dplyr}` versão 1.0. 
+
+```{r dplyr-rename_with}
+adult %>% 
+  rename_with(~gsub("-", "_", .x))
+```
+
+```{r mais-select}
+adult %>% 
+  rename_with(~gsub("-", "_", .x)) %>% 
+  select(where(is.factor)) %>% 
+  select(-workclass) %>% 
+  rename_all(~paste0("antigo_", .x))
+```
+
+> Professor eu gosto de camelCase e agora?
+
+Não tema, tem o pacote [`{janitor}`](https://garthtarr.github.io/meatR/janitor.html)
+
+```{r janitor}
+library(janitor)
+adult %>% clean_names(case = "lower_camel")
+```
+
+#### Ordenar variáveis com `dplyr::arrange()`
+
+```{r adult-arrange}
+adult_clean %>% 
+  arrange(-age, education_num) %>% 
+  select(age, education_num)
+```
+
+#### Frequencias com `dplyr::count()`
+
+> OBS: vamos ver muito essa função quando falarmos de `group_by()`
+
+```{r adult-count}
+adult_clean %>% 
+  count(age, income, sort = TRUE)
+```
+
+
+### Manipular Variáveis -- `dplyr::mutate()`
+
+> Odeio potência de 10
+
+use `options(scipen = 999, digits = 2)`
+
+```{r dplyr-mutate}
+options(scipen = 999, digits = 2)
+countries <- countries %>% clean_names()
+
+countries %>% 
+  mutate(
+    log_pop = log(population),
+    area_sq_km = area_sq_mi * 2.5899985,
+    pop_density_per_sq_km = population / area_sq_km)
+```
+
+O mutate ele altera variáveis *in-place* ou adiciona novas variáveis preservando as existentes. Mas temos também o `transmute` adiciona novas variáveis e *dropa* todas as demais.
+
+```{r dplyr-transmute}
+countries %>% 
+  transmute(
+    log_pop = log(population),
+    area_sq_km = area_sq_mi * 2.5899985,
+    pop_density_per_sq_km = population / area_sq_km)
+```
+
+Quase todos os verbos (como vocês viram lá em cima) do `{dplyr}` tem os sufixos `_if`, `_all` e `_at`. Por exemplo:
+
+```{r dplyr-mutate_all}
+covid %>% 
+  mutate_if(is.character, as.factor)
+```
+#### `dplyr::ifelse` e `dplyr::case_when`
+
+
 ### Agrupar e Sumarizar Variáveis -- `dplyr::group_by()` e `dplyr::summarise()`
+
+### Joins com `dplyr::join*`
 
 > OBS: participação especial do [`{stringr}`](https://stringr.tidyverse.org/)
 
@@ -76,3 +206,9 @@ Além do `unnest_wider()` e `unnest_longer()`:
 ### Converter verbos `{dplyr}` em SQL com o [`{dbplyr}`](https://dbplyr.tidyverse.org/)
 
 ### Big Data com [`{arrow}`](https://arrow.apache.org/docs/r/)
+
+## Ambiente
+
+```{r sessionInfo}
+sessionInfo()
+```
