@@ -2429,6 +2429,27 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 </div>
 
 <div class="d-article">
+<div class="d-contents d-contents-float">
+<nav class="l-text toc figcaption" id="TOC">
+<h3>Contents</h3>
+<ul>
+<li><a href="#como-usar">Como usar?</a></li>
+<li><a href="#geoms"><code>Geom</code>s</a></li>
+<li><a href="#estéticas-com-aes">Estéticas com <code>aes()</code></a>
+<ul>
+<li><a href="#atributos-dentro-e-fora-do-aes">Atributos dentro e fora do <code>aes()</code></a></li>
+</ul></li>
+<li><a href="#rótulos-com-labs">Rótulos com <code>labs()</code></a></li>
+<li><a href="#facetação-com-facet_wrap">Facetação com <code>facet_wrap()</code></a></li>
+<li><a href="#customização-de-temas-com-theme">Customização de Temas com <code>theme()</code></a></li>
+<li><a href="#escalas-com-o-scale__">Escalas com o <code>scale_*_*()</code></a></li>
+<li><a href="#mais-escalas-com-o-scales">Mais escalas com o <code>{scales}</code></a></li>
+<li><a href="#compor-múltiplos-gráficos-com-patchwork">Compor múltiplos gráficos com <code>{patchwork}</code></a></li>
+<li><a href="#free-samples"><em>Free Samples</em></a></li>
+<li><a href="#ambiente">Ambiente</a></li>
+</ul>
+</nav>
+</div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure" style="text-align: center"><span id="fig:ggplot2"></span>
@@ -2438,7 +2459,147 @@ Figure 1: Crie sua Obra-Prima!
 </p>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<p><a href="https://ggplot2.tidyverse.org/"><code>{ggplot2}</code></a> é um sistema para a criação declarativa de gráficos, baseado na <a href="https://amzn.to/2ef1eWp">Gramática dos Gráficos</a>–um esquema geral para visualização de dados que divide os gráficos em componentes semânticos, como escalas e camadas. Você fornece os dados, diz ao <code>{ggplot2}</code> como mapear as variáveis para as estéticas, quais primitivos gráficos usar e ele cuida dos detalhes.</p>
+<p>Um livro muito bom sobre visualização de dados é o <a href="https://clauswilke.com/dataviz/">“Fundamentals of Data Visualizations” de Claus Wilke</a> (Figura <a href="#fig:fundamentals-wilke">2</a>). Um segredinho, ele foi todo feito em <a href="https://github.com/clauswilke/dataviz"><code>Rmarkdown</code> e <code>ggplot2</code></a> #ficaadica.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure" style="text-align: center"><span id="fig:fundamentals-wilke"></span>
+<img src="images/fundamentals-wilke.png" alt="Fundamentals of Data Visualization" width="304" />
+<p class="caption">
+Figure 2: Fundamentals of Data Visualization
+</p>
+</div>
+</div>
+<h2 id="como-usar">Como usar?</h2>
+<p>Cada gráfico ggplot2 tem três componentes principais:</p>
+<ol type="1">
+<li><strong>dados</strong> (<em>data</em>),</li>
+<li>Um conjunto de <strong>mapeamentos estéticos</strong> (<em>aesthetics</em>) <code>aes()</code> entre variáveis nos dados e propriedades visuais, e</li>
+<li>Pelo menos uma <strong>camada</strong> (<em>layer</em>) que descreve como renderizar cada observação. As camadas geralmente são criadas com uma função <code>geom_*</code>.</li>
+</ol>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<blockquote>
+<p>OBS: Porque <code>+</code> e não o <em>pipe</em> <code>%&gt;%</code>?</p>
+</blockquote>
+<h2 id="geoms"><code>Geom</code>s</h2>
+<p>Temos vários! VÁRIOS! Vou mostrar alguns mais comuns:</p>
+<ul>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/geom_point.html"><code>geom_point()</code></a>: gráficos de dispersão.</p></li>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html"><code>geom_smooth()</code></a>: ajusta uma linha de tendêndia (suavizada ou linear) aos dados e a exibe junto com o seu erro padrão. Muitas vezes usado em conjunto com o <code>geom_point()</code>.</p></li>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html"><code>geom_boxplot()</code></a>: diagrama de caixa, o queridinho dos estatísticos (idealizado por John Tukey).</p></li>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html"><code>geom_histogram()</code></a> e <a href="https://ggplot2.tidyverse.org/reference/geom_density.html"><code>geom_density()</code></a>: distribuição de variáveis contínuas, intervalares ou ordinais.</p></li>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html"><code>geom_bar()</code></a>: distribuição de variáveis discretas, qualitativas, categóricas ou nominais. <code>geom_bar()</code> por padrão conta a frequência das ocorrências mas você pode usar qualquer outra maneira de contagem com o <a href="https://ggplot2.tidyverse.org/reference/geom_bar.html"><code>geom_col()</code></a>.</p></li>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/geom_path.html"><code>geom_line()</code></a>: desenha linhas entre as observacões.</p></li>
+</ul>
+<h2 id="estéticas-com-aes">Estéticas com <code>aes()</code></h2>
+<p>Além de <code>x</code> e <code>y</code> temos outros atributos como:</p>
+<ul>
+<li><code>colour</code>:cores (cuidado pois as vezes pessoas confundem com <code>fill</code>)</li>
+<li><code>fill</code>: preenchimento</li>
+<li><code>shape</code>: forma</li>
+<li><code>size</code>: tamanho</li>
+</ul>
+<h3 id="atributos-dentro-e-fora-do-aes">Atributos dentro e fora do <code>aes()</code></h3>
+<h2 id="rótulos-com-labs">Rótulos com <code>labs()</code></h2>
+<p>Teoricamente você precisa somente de <code>ggplot(aes(... )) + geom_*()</code>. Mas à vezes é legal customizar o gráfico com mais informações ou alterar alguma coisa.</p>
+<p><code>{ggplot2}</code> fornece a função auxiliar <code>labs()</code> para definir o nome para uma ou mais escalas, usando pares nome-valor como <code>x = "eixo X"</code> ou <code>fill = "legenda do preenchimento"</code>. Além disso, você pode adicionar <code>NULL</code> para remover o rótulo:</p>
+<ul>
+<li><code>title</code>: título</li>
+<li><code>subtitle</code>: subtítulo</li>
+<li><code>x</code>: eixo X</li>
+<li><code>y</code>: eixo Y</li>
+<li><code>caption</code>: “rubrica”</li>
+</ul>
+<h2 id="facetação-com-facet_wrap">Facetação com <code>facet_wrap()</code></h2>
+<p>Outra técnica para exibir variáveis categóricas adicionais em um gráfico é a facetação A facetação cria tabelas de gráficos dividindo os dados em subconjuntos e exibindo o mesmo gráfico para cada subconjunto.</p>
+<p>Para facetar um gráfico, você simplesmente adiciona uma especificação de facetamento com [<code>facet_wrap ()</code>] (<a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="uri">https://ggplot2.tidyverse.org/reference/facet_wrap.html</a>), que leva o nome de uma variável precedida por <code>~</code>.</p>
+<h2 id="customização-de-temas-com-theme">Customização de Temas com <code>theme()</code></h2>
+<p>O sistema de temas é composto por quatro componentes principais:</p>
+<ul>
+<li>Os <strong>elementos</strong> do tema especificam os elementos que não são de dados que você pode controlar. Por exemplo, o elemento <code>plot.title</code> controla a aparência do título do gráfico; <code>axis.ticks.x</code>, os ticks no eixo x; <code>legend.key.height</code>, a altura das chaves na legenda.</li>
+<li>Cada elemento está associado a uma <strong>função de elemento</strong>, que descreve as propriedades visuais do elemento. Por exemplo, <a href="https://ggplot2.tidyverse.org/reference/element.html"><code>element_text ()</code></a> define o tamanho da fonte, a cor e a face dos elementos de texto como <code>plot.title</code>.</li>
+<li>A função <a href="https://ggplot2.tidyverse.org/reference/theme.html"><code>theme ()</code></a> que permite substituir os elementos do tema padrão chamando funções de elemento, como <code>theme(plot.title = element_text (color = "red"))</code></li>
+<li><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html"><strong>Temas</strong></a> completos, como <code>theme_grey()</code>, para definir todos os elementos do tema para valores projetados para trabalhar de maneira harmônica.</li>
+</ul>
+<h2 id="escalas-com-o-scale__">Escalas com o <code>scale_*_*()</code></h2>
+<p>As escalas controlam os detalhes de como os valores dos dados são convertidos em propriedades visuais. Temos várias, veja a <a href="https://ggplot2.tidyverse.org/reference/index.html#section-scales">documentação</a>. Mas vou destacar algumas que uso bastante:</p>
+<ul>
+<li><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html"><code>scale_y_log10()</code></a>: põe o eixo <code>y</code> numa escala logarítima (parece que isso tá na moda com o COVID).</li>
+<li><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html"><code>scale_fill_brewer()</code> e <code>scale_colour_brewer()</code></a>: usa as escalas de cores do <a href="https://colorbrewer2.org/">Color Brewer 2.0</a>.</li>
+<li><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html"><code>scale_fill_viridis_c()</code> e <code>scale_colour_viridis_c()</code></a>: usa as escalas de cores <em>opensource</em> do <a href="https://bids.github.io/colormap/"><code>Matplotlib</code></a></li>
+</ul>
+<h2 id="mais-escalas-com-o-scales">Mais escalas com o <code>{scales}</code></h2>
+<p>O pacote <a href="https://scales.r-lib.org/"><code>{scales}</code></a> fornece a infraestrutura de escala interna usada pelo <code>{ggplot2}</code> e fornece ferramentas para substituir os valores padrões de <code>breaks</code>, <code>labels</code>, <code>transformations</code> etc.</p>
+<ul>
+<li><a href="https://scales.r-lib.org/reference/label_percent.html"><code>label_percent()</code></a>: converte os rótulos de um eixo para percentuais.</li>
+<li><a href="https://scales.r-lib.org/reference/label_scientific.html"><code>label_scientific()</code></a>: converte os rótulos de um eixo para notação científica (<code>1e05</code>, <code>1.5e-02</code> etc.).</li>
+<li><a href="https://scales.r-lib.org/reference/label_dollar.html"><code>label_dollar()</code></a>: converte os rótulos de um eixo para valores de moeda (U$, R$ etc.)</li>
+</ul>
+<h2 id="compor-múltiplos-gráficos-com-patchwork">Compor múltiplos gráficos com <code>{patchwork}</code></h2>
+<p>O pacote <a href="https://patchwork.data-imaginist.com/index.html"><code>{patchwork}</code></a> tem como objetivo tornar ridiculamente simples combinar gráficos <code>{ggplot2}</code> em um mesmo gráfico.</p>
+<p>É apenas usando operadores aritméticos e relacionais já conhecidos como se fosse uma álgebra de gráficos: <code>()</code>, <code>+</code>, <code>/</code>, <code>|</code> etc.</p>
+<h2 id="free-samples"><em>Free Samples</em></h2>
+<p>Vocês já sabem tudo o que é necessário para fazerem visualizações perfeitas no <code>{ggplot2}</code>. Mas tem alguns outros pacotes que valhe a pena aprender.</p>
+<ul>
+<li><a href="https://ggrepel.slowkow.com/"><code>{ggrepel}</code></a>: geoms para <code>{ggplot2}</code> para repelir rótulos de texto sobrepostos.</li>
+<li><a href="https://yutannihilation.github.io/gghighlight/articles/gghighlight.html"><code>{gghighlight}</code></a>: destacar geoms no <code>{ggplot2}</code>.</li>
+<li><a href="https://github.com/daattali/ggExtra"><code>{ggExtra}</code></a>: histogramas marginais em gráficos de dispersão.</li>
+<li><a href="https://wilkelab.org/ggridges/"><code>{ggridges}</code></a>: um dos meus preferidos! Gráficos de densidade múltiplos.</li>
+</ul>
+<h2 id="ambiente">Ambiente</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>R Under development (unstable) (2021-03-23 r80105)
+Platform: aarch64-apple-darwin20.0 (64-bit)
+Running under: macOS Big Sur 11.2.3
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods  
+[7] base     
+
+other attached packages:
+[1] dplyr_1.0.5   ggplot2_3.3.3
+
+loaded via a namespace (and not attached):
+ [1] bslib_0.2.4       compiler_4.1.0    pillar_1.5.1     
+ [4] jquerylib_0.1.3   highr_0.8         tools_4.1.0      
+ [7] digest_0.6.27     downlit_0.2.1     jsonlite_1.7.2   
+[10] evaluate_0.14     lifecycle_1.0.0   tibble_3.1.0     
+[13] gtable_0.3.0      pkgconfig_2.0.3   png_0.1-7        
+[16] rlang_0.4.10      DBI_1.1.1         distill_1.2      
+[19] yaml_2.2.1        parallel_4.1.0    xfun_0.22        
+[22] withr_2.4.1       stringr_1.4.0     knitr_1.31       
+[25] generics_0.1.0    vctrs_0.3.7       sass_0.3.1       
+[28] systemfonts_1.0.1 tidyselect_1.1.0  grid_4.1.0       
+[31] glue_1.4.2        R6_2.5.0          textshaping_0.3.3
+[34] fansi_0.4.2       rmarkdown_2.7     purrr_0.3.4      
+[37] magrittr_2.0.1    scales_1.1.1      htmltools_0.5.1.1
+[40] ellipsis_0.3.1    assertthat_0.2.1  colorspace_2.0-0 
+[43] ragg_1.1.2        utf8_1.2.1        stringi_1.5.3    
+[46] munsell_0.5.0     crayon_1.4.1     </code></pre>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>

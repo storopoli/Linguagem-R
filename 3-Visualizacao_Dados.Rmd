@@ -22,6 +22,123 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::include_graphics("images/ggplot2_obra_prima_pt.png")
 ```
 
+[`{ggplot2}`](https://ggplot2.tidyverse.org/) é um sistema para a criação declarativa de gráficos, baseado na [Gramática dos Gráficos](https://amzn.to/2ef1eWp)--um esquema geral para visualização de dados que divide os gráficos em componentes semânticos, como escalas e camadas. Você fornece os dados, diz ao `{ggplot2}` como mapear as variáveis para as estéticas, quais primitivos gráficos usar e ele cuida dos detalhes.
+
+Um livro muito bom sobre visualização de dados é o ["Fundamentals of Data Visualizations" de Claus Wilke](https://clauswilke.com/dataviz/) (Figura \@ref(fig:fundamentals-wilke)). Um segredinho, ele foi todo feito em [`Rmarkdown` e `ggplot2`](https://github.com/clauswilke/dataviz) #ficaadica.
+
+```{r fundamentals-wilke, echo=FALSE, fig.align='center', fig.cap='Fundamentals of Data Visualization'}
+knitr::include_graphics("images/fundamentals-wilke.png")
+```
+
+## Como usar?
+
+Cada gráfico ggplot2 tem três componentes principais:
+
+1. **dados** (*data*),
+2. Um conjunto de **mapeamentos estéticos** (*aesthetics*) `aes()` entre variáveis nos dados e propriedades visuais, e
+3. Pelo menos uma **camada** (*layer*) que descreve como renderizar cada observação. As camadas geralmente são criadas com uma função `geom_*`.
+
+```{r ggplot-data}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r ggplot-aes}
+
+```
+
+
+```{r ggplot-geom}
+
+```
+
+> OBS: Porque `+` e não o *pipe* `%>%`?
+
+## `Geom`s
+
+Temos vários! VÁRIOS! Vou mostrar alguns mais comuns:
+
+* [`geom_point()`](https://ggplot2.tidyverse.org/reference/geom_point.html): gráficos de dispersão. 
+
+* [`geom_smooth()`](https://ggplot2.tidyverse.org/reference/geom_smooth.html): ajusta uma linha de tendêndia (suavizada ou linear) aos dados e a exibe junto com o seu erro padrão. Muitas vezes usado em conjunto com o `geom_point()`.
+
+* [`geom_boxplot()`](https://ggplot2.tidyverse.org/reference/geom_boxplot.html): diagrama de caixa, o queridinho dos estatísticos (idealizado por John Tukey).
+
+* [`geom_histogram()`](https://ggplot2.tidyverse.org/reference/geom_histogram.html) e [`geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html): distribuição de variáveis contínuas, intervalares ou ordinais.
+
+* [`geom_bar()`](https://ggplot2.tidyverse.org/reference/geom_bar.html): distribuição de variáveis discretas, qualitativas, categóricas ou nominais. `geom_bar()` por padrão conta a frequência das ocorrências mas você pode usar qualquer outra maneira de contagem com o [`geom_col()`](https://ggplot2.tidyverse.org/reference/geom_bar.html).
+
+* [`geom_line()`](https://ggplot2.tidyverse.org/reference/geom_path.html): desenha linhas entre as observacões.
+
+## Estéticas com `aes()`
+
+Além de `x` e `y` temos outros atributos como:
+
+* `colour`:cores (cuidado pois as vezes pessoas confundem com `fill`)
+* `fill`: preenchimento
+* `shape`: forma
+* `size`: tamanho
+
+### Atributos dentro e fora do `aes()`
+
+## Rótulos com `labs()`
+
+Teoricamente você precisa somente de `ggplot(aes(... )) + geom_*()`. Mas à vezes é legal customizar o gráfico com mais informações ou alterar alguma coisa.
+
+`{ggplot2}` fornece a função auxiliar `labs()` para definir o nome para uma ou mais escalas, usando pares nome-valor como `x = "eixo X"` ou `fill = "legenda do preenchimento"`. Além disso, você pode adicionar `NULL` para remover o rótulo:
+
+* `title`: título
+* `subtitle`: subtítulo
+* `x`: eixo X
+* `y`: eixo Y
+* `caption`: "rubrica"
+
+## Facetação com `facet_wrap()`
+
+Outra técnica para exibir variáveis categóricas adicionais em um gráfico é a facetação A facetação cria tabelas de gráficos dividindo os dados em subconjuntos e exibindo o mesmo gráfico para cada subconjunto.
+
+Para facetar um gráfico, você simplesmente adiciona uma especificação de facetamento com [`facet_wrap ()`] (https://ggplot2.tidyverse.org/reference/facet_wrap.html), que leva o nome de uma variável precedida por `~`.
+
+## Customização de Temas com `theme()`
+
+O sistema de temas é composto por quatro componentes principais:
+
+* Os **elementos** do tema especificam os elementos que não são de dados que você pode controlar. Por exemplo, o elemento `plot.title` controla a aparência do título do gráfico; `axis.ticks.x`, os ticks no eixo x; `legend.key.height`, a altura das chaves na legenda.
+* Cada elemento está associado a uma **função de elemento**, que descreve as propriedades visuais do elemento. Por exemplo, [`element_text ()`](https://ggplot2.tidyverse.org/reference/element.html) define o tamanho da fonte, a cor e a face dos elementos de texto como `plot.title`.
+* A função [`theme ()`](https://ggplot2.tidyverse.org/reference/theme.html) que permite substituir os elementos do tema padrão chamando funções de elemento, como `theme(plot.title = element_text (color = "red"))`
+- [**Temas**](https://ggplot2.tidyverse.org/reference/ggtheme.html) completos, como `theme_grey()`, para definir todos os elementos do tema para valores projetados para trabalhar de maneira harmônica.
+
+## Escalas com o `scale_*_*()`
+
+As escalas controlam os detalhes de como os valores dos dados são convertidos em propriedades visuais. Temos várias, veja a [documentação](https://ggplot2.tidyverse.org/reference/index.html#section-scales). Mas vou destacar algumas que uso bastante:
+
+* [`scale_y_log10()`](https://ggplot2.tidyverse.org/reference/scale_continuous.html): põe o eixo `y` numa escala logarítima (parece que isso tá na moda com o COVID).
+* [`scale_fill_brewer()` e `scale_colour_brewer()`](https://ggplot2.tidyverse.org/reference/scale_brewer.html): usa as escalas de cores do [Color Brewer 2.0](https://colorbrewer2.org/).
+* [`scale_fill_viridis_c()` e `scale_colour_viridis_c()`](https://ggplot2.tidyverse.org/reference/scale_viridis.html): usa as escalas de cores *opensource* do [`Matplotlib`](https://bids.github.io/colormap/)
+
+## Mais escalas com o `{scales}`
+
+O pacote [`{scales}`](https://scales.r-lib.org/) fornece a infraestrutura de escala interna usada pelo `{ggplot2}` e fornece ferramentas para substituir os valores padrões de `breaks`, `labels`, `transformations` etc.
+
+* [`label_percent()`](https://scales.r-lib.org/reference/label_percent.html): converte os rótulos de um eixo para percentuais.
+* [`label_scientific()`](https://scales.r-lib.org/reference/label_scientific.html): converte os rótulos de um eixo para notação científica (`1e05`, `1.5e-02` etc.).
+* [`label_dollar()`](https://scales.r-lib.org/reference/label_dollar.html): converte os rótulos de um eixo para valores de moeda (U\$, R\$ etc.)
+
+## Compor múltiplos gráficos com `{patchwork}`
+
+O pacote [`{patchwork}`](https://patchwork.data-imaginist.com/index.html) tem como objetivo tornar ridiculamente simples combinar gráficos `{ggplot2}` em um mesmo gráfico.
+
+É apenas usando operadores aritméticos e relacionais já conhecidos como se fosse uma álgebra de gráficos: `()`, `+`, `/`, `|` etc.
+
+## *Free Samples*
+
+Vocês já sabem tudo o que é necessário para fazerem visualizações perfeitas no `{ggplot2}`. Mas tem alguns outros pacotes que valhe a pena aprender.
+
+* [`{ggrepel}`](https://ggrepel.slowkow.com/): geoms para `{ggplot2}` para repelir rótulos de texto sobrepostos.
+* [`{gghighlight}`](https://yutannihilation.github.io/gghighlight/articles/gghighlight.html): destacar geoms no `{ggplot2}`.
+* [`{ggExtra}`](https://github.com/daattali/ggExtra): histogramas marginais em gráficos de dispersão.
+* [`{ggridges}`](https://wilkelab.org/ggridges/): um dos meus preferidos! Gráficos de densidade múltiplos.
+
 ## Ambiente
 
 ```{r sessionInfo}
