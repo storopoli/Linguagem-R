@@ -32,54 +32,170 @@ knitr::include_graphics("images/fundamentals-wilke.png")
 
 ## Como usar?
 
-Cada gráfico ggplot2 tem três componentes principais:
+Cada gráfico `{ggplot2}` tem três componentes principais:
 
 1. **dados** (*data*),
 2. Um conjunto de **mapeamentos estéticos** (*aesthetics*) `aes()` entre variáveis nos dados e propriedades visuais, e
 3. Pelo menos uma **camada** (*layer*) que descreve como renderizar cada observação. As camadas geralmente são criadas com uma função `geom_*`.
 
 ```{r ggplot-data}
-library(ggplot2)
+library(ggplot2) # `require(ggplot2)` também serve 99.99% usam `library()`
 library(dplyr)
+mpg %>% # igual a isso `ggplot(data = mpg)`
+  ggplot()
 ```
 
 ```{r ggplot-aes}
-
+mpg %>% 
+  ggplot(aes(hwy, cty))
 ```
 
 
 ```{r ggplot-geom}
-
+mpg %>% 
+  ggplot(aes(hwy, cty)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
 ```
 
 > OBS: Porque `+` e não o *pipe* `%>%`?
+> Lembra que eu falei que `{ggplot2}` veio antes do `{tidyverse}` e antes do Hadley trabalhar totalmente com *opensource* na RStudio? Então os `geom_*()` vieram antes do *pipe* `%>%`. Por isso a API **adiciona** camadas. Então usamos o `+`.
 
-## `Geom`s
+> Pergunta: Quero interatividade?! E agora?
+> Resposta: Não tema! Use o `{plotly}` e seja feliz!
+
+```{r plotly}
+library(plotly)
+p <- mpg %>% 
+  ggplot(aes(hwy, cty)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+ggplotly(p)
+```
+
+
+## `Geom`
 
 Temos vários! VÁRIOS! Vou mostrar alguns mais comuns:
 
-* [`geom_point()`](https://ggplot2.tidyverse.org/reference/geom_point.html): gráficos de dispersão. 
+* [`geom_point()`](https://ggplot2.tidyverse.org/reference/geom_point.html): gráficos de dispersão.
+
+```{r geom-point}
+mpg %>% 
+  ggplot(aes(cyl)) +
+  geom_point(aes(y = hwy), shape = 3, color = "steelblue") +
+  geom_point(aes(y = cty), shape = 1, color = "red")
+```
+
 
 * [`geom_smooth()`](https://ggplot2.tidyverse.org/reference/geom_smooth.html): ajusta uma linha de tendêndia (suavizada ou linear) aos dados e a exibe junto com o seu erro padrão. Muitas vezes usado em conjunto com o `geom_point()`.
 
+```{r geom-smooth}
+ggplot(mpg, aes(displ, hwy, colour = class)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
 * [`geom_boxplot()`](https://ggplot2.tidyverse.org/reference/geom_boxplot.html): diagrama de caixa, o queridinho dos estatísticos (idealizado por John Tukey).
+
+```{r geom-boxplot}
+mpg %>% 
+  ggplot(aes(class, hwy, colour = class)) +
+  geom_boxplot()
+```
 
 * [`geom_histogram()`](https://ggplot2.tidyverse.org/reference/geom_histogram.html) e [`geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html): distribuição de variáveis contínuas, intervalares ou ordinais.
 
+```{r geom-histogram}
+mpg %>% 
+  ggplot(aes(hwy)) +
+  geom_histogram(bins = 30)
+```
+
+```{r geom-density}
+mpg %>% 
+  ggplot(aes(hwy)) +
+  geom_density(fill = "steelblue")
+```
+
 * [`geom_bar()`](https://ggplot2.tidyverse.org/reference/geom_bar.html): distribuição de variáveis discretas, qualitativas, categóricas ou nominais. `geom_bar()` por padrão conta a frequência das ocorrências mas você pode usar qualquer outra maneira de contagem com o [`geom_col()`](https://ggplot2.tidyverse.org/reference/geom_bar.html).
 
-* [`geom_line()`](https://ggplot2.tidyverse.org/reference/geom_path.html): desenha linhas entre as observacões.
+```{r geom-bar}
+mpg %>% 
+  ggplot(aes(class)) +
+  geom_bar()
+```
+
+```{r geom-col}
+library(forcats)
+mpg %>% 
+  count(class) %>% 
+  mutate(class = as.factor(class),
+         class = fct_reorder(class, n, .desc = TRUE)) %>% 
+  ggplot(aes(class, n)) +
+  geom_col()
+```
+
+
+* [`geom_line()`](https://ggplot2.tidyverse.org/reference/geom_path.html): desenha linhas entre as observacões. Muito "abusado". Tentem usar apenas para séries temporais #ficaadica.
+
+```{r geom-line}
+economics %>% 
+  ggplot(aes(date, unemploy)) +
+  geom_line()
+```
 
 ## Estéticas com `aes()`
 
 Além de `x` e `y` temos outros atributos como:
 
-* `colour`:cores (cuidado pois as vezes pessoas confundem com `fill`)
+* `colour`: cores (cuidado pois as vezes pessoas confundem com `fill`)
+
+```{r aes-colour}
+mpg %>% 
+  ggplot(aes(cyl, hwy, colour = class)) +
+  geom_point()
+```
+
 * `fill`: preenchimento
+
+```{r aes-fill}
+mpg %>% 
+  ggplot(aes(class, fill = manufacturer)) +
+  geom_bar()
+```
+
 * `shape`: forma
+
+```{r aes-shape}
+mpg %>% 
+  ggplot(aes(cyl, cty, shape = class)) +
+  geom_point()
+```
+
 * `size`: tamanho
 
+```{r aes-size}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point()
+```
+
 ### Atributos dentro e fora do `aes()`
+
+Vejam abaixo o que vai acontecer!
+
+```{r aes-dentro}
+mpg %>% 
+  ggplot() +
+  geom_point(aes(displ, hwy, colour =  "steelblue"))
+```
+
+```{r aes-fora}
+mpg %>% 
+  ggplot() +
+  geom_point(aes(hwy, displ), color = "steelblue", size = 5)
+```
 
 ## Rótulos com `labs()`
 
@@ -92,6 +208,37 @@ Teoricamente você precisa somente de `ggplot(aes(... )) + geom_*()`. Mas à vez
 * `x`: eixo X
 * `y`: eixo Y
 * `caption`: "rubrica"
+
+```{r ggplot-labs}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  labs(
+    title = "Um gráfico bonito",
+    subtitle = "... é aquele que tem subtítulos",
+    caption = " ... juntamente com \"rubricas\"",
+    x = "Deslocamento Volumétrico",
+    y = "Autonomia em Milhas por Galão",
+    colour = "Tipo de Carro",
+    size = "QTD Cilindros"
+  )
+```
+
+```{r labs-NULL}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  labs(
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL,
+    x = NULL,
+    y = NULL,
+    colour = NULL,
+    size = NULL
+  )
+```
+
 
 ## Facetação com `facet_wrap()`
 
@@ -129,6 +276,8 @@ O pacote [`{scales}`](https://scales.r-lib.org/) fornece a infraestrutura de esc
 O pacote [`{patchwork}`](https://patchwork.data-imaginist.com/index.html) tem como objetivo tornar ridiculamente simples combinar gráficos `{ggplot2}` em um mesmo gráfico.
 
 É apenas usando operadores aritméticos e relacionais já conhecidos como se fosse uma álgebra de gráficos: `()`, `+`, `/`, `|` etc.
+
+## "Como é que salva?" `ggsave()`
 
 ## *Free Samples*
 
