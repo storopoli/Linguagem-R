@@ -242,34 +242,154 @@ mpg %>%
 
 ## Facetação com `facet_wrap()`
 
-Outra técnica para exibir variáveis categóricas adicionais em um gráfico é a facetação A facetação cria tabelas de gráficos dividindo os dados em subconjuntos e exibindo o mesmo gráfico para cada subconjunto.
+Outra técnica para exibir variáveis categóricas adicionais em um gráfico é a facetação. A facetação cria tabelas de gráficos dividindo os dados em subconjuntos e exibindo o mesmo gráfico para cada subconjunto.
 
-Para facetar um gráfico, você simplesmente adiciona uma especificação de facetamento com [`facet_wrap ()`] (https://ggplot2.tidyverse.org/reference/facet_wrap.html), que leva o nome de uma variável precedida por `~`.
+Para facetar um gráfico, você simplesmente adiciona uma especificação de facetamento com [`facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html), que leva o nome de uma variável precedida por `~`.
+
+```{r facet-wrap}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  facet_wrap(~class)
+```
+
+`facet_wrap()` tem alguns argumentos interessentes:
+
+* `nrow` ou `ncol`
+* `scales` controla os eixos `x` e `y`
+* `labeller` controla o "subtítulo" da "faceta"
+
+```{r facet-wrap-arguments}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  facet_wrap(~class,
+             ncol = 2,               # mutuamente exclusivo de `nrow`
+             scales = "free",        # cada faceta tem seu eixo x e y
+             labeller = "label_both" # traz o label da "facet" junto com o valor das classes da faceta
+             )
+```
+
+Você pode colocar mais `facets`. Quando você tem mais variáveis o `labeller = "label_value"` funciona muito bem.
+
+```{r facet-wrap-multi}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  facet_wrap(~class + cyl,
+             labeller = "label_both")
+```
 
 ## Customização de Temas com `theme()`
 
 O sistema de temas é composto por quatro componentes principais:
 
 * Os **elementos** do tema especificam os elementos que não são de dados que você pode controlar. Por exemplo, o elemento `plot.title` controla a aparência do título do gráfico; `axis.ticks.x`, os ticks no eixo x; `legend.key.height`, a altura das chaves na legenda.
+
+```{r theme-element}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  labs(title = "Algum título que eu vou querer em Comic Sans") +
+  facet_wrap(~class + cyl,
+             labeller = "label_both") +
+  theme(text = element_text(size = 8),
+        plot.title = element_text(family = "Comic Sans MS"),
+        axis.ticks.x = element_line(colour = "purple",
+                                    arrow = arrow(
+                                      length = unit(
+                                        1, "mm"))))
+```
+
+
 * Cada elemento está associado a uma **função de elemento**, que descreve as propriedades visuais do elemento. Por exemplo, [`element_text ()`](https://ggplot2.tidyverse.org/reference/element.html) define o tamanho da fonte, a cor e a face dos elementos de texto como `plot.title`.
+
 * A função [`theme ()`](https://ggplot2.tidyverse.org/reference/theme.html) que permite substituir os elementos do tema padrão chamando funções de elemento, como `theme(plot.title = element_text (color = "red"))`
 - [**Temas**](https://ggplot2.tidyverse.org/reference/ggtheme.html) completos, como `theme_grey()`, para definir todos os elementos do tema para valores projetados para trabalhar de maneira harmônica.
+
+```{r custom-themes}
+mpg %>% 
+  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point() +
+  theme_classic() # gosto bastante
+```
 
 ## Escalas com o `scale_*_*()`
 
 As escalas controlam os detalhes de como os valores dos dados são convertidos em propriedades visuais. Temos várias, veja a [documentação](https://ggplot2.tidyverse.org/reference/index.html#section-scales). Mas vou destacar algumas que uso bastante:
 
 * [`scale_y_log10()`](https://ggplot2.tidyverse.org/reference/scale_continuous.html): põe o eixo `y` numa escala logarítima (parece que isso tá na moda com o COVID).
+
+```{r scale_y_log10}
+economics %>% 
+  ggplot(aes(date, unemploy)) +
+  geom_line() +
+  scale_y_log10()
+```
+
 * [`scale_fill_brewer()` e `scale_colour_brewer()`](https://ggplot2.tidyverse.org/reference/scale_brewer.html): usa as escalas de cores do [Color Brewer 2.0](https://colorbrewer2.org/).
+
+```{r scale_colour_brewer}
+mpg %>% 
+ggplot(aes(displ, hwy, colour = class)) + 
+  geom_point(alpha = 0.5) +
+  scale_color_brewer(palette = "Set1")
+
+```
+
 * [`scale_fill_viridis_c()` e `scale_colour_viridis_c()`](https://ggplot2.tidyverse.org/reference/scale_viridis.html): usa as escalas de cores *opensource* do [`Matplotlib`](https://bids.github.io/colormap/)
+
+```{r scale_fill_viridis_c}
+mpg %>% 
+ggplot(aes(displ, hwy, colour = as.factor(cyl))) + 
+  geom_point() +
+  scale_colour_viridis_d(option = "E") # cividis que é inclusivo de quem tem "dificuldades" de cores
+```
+
+
+Vamos arrumar o gráfico anterior:
+
+```{r scale_size}
+mpg %>% 
+ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
+  geom_point(alpha = 0.5) +
+  scale_size(range = c(1, 3))
+```
+
 
 ## Mais escalas com o `{scales}`
 
 O pacote [`{scales}`](https://scales.r-lib.org/) fornece a infraestrutura de escala interna usada pelo `{ggplot2}` e fornece ferramentas para substituir os valores padrões de `breaks`, `labels`, `transformations` etc.
 
 * [`label_percent()`](https://scales.r-lib.org/reference/label_percent.html): converte os rótulos de um eixo para percentuais.
+
+```{r label_percent}
+economics %>%
+  ggplot(aes(date, unemploy / pop)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::label_percent(accuracy = 0.01, decimal.mark = ",")) +
+  labs(y = "% de Desempregados da Pop Total")
+```
+
+
 * [`label_scientific()`](https://scales.r-lib.org/reference/label_scientific.html): converte os rótulos de um eixo para notação científica (`1e05`, `1.5e-02` etc.).
+
 * [`label_dollar()`](https://scales.r-lib.org/reference/label_dollar.html): converte os rótulos de um eixo para valores de moeda (U\$, R\$ etc.)
+
+```{r label_dollar}
+economics %>% 
+  ggplot(aes(date, pce)) +
+  geom_line() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix = "R$ ",
+                                  suffix = " bi",
+                                  decimal.mark = ".")
+  )
+```
+
+## "Como é que salva?" `ggsave()`
+
+Só usar o `ggsave(dpi = 300)`
 
 ## Compor múltiplos gráficos com `{patchwork}`
 
@@ -277,20 +397,105 @@ O pacote [`{patchwork}`](https://patchwork.data-imaginist.com/index.html) tem co
 
 É apenas usando operadores aritméticos e relacionais já conhecidos como se fosse uma álgebra de gráficos: `()`, `+`, `/`, `|` etc.
 
-## "Como é que salva?" `ggsave()`
+```{r patchwork}
+library(patchwork)
+p1 <- ggplot(mtcars) + geom_point(aes(mpg, disp))
+p2 <- ggplot(mtcars) + geom_boxplot(aes(gear, disp, group = gear))
+p3 <- ggplot(mtcars) + geom_smooth(aes(disp, qsec))
+p4 <- ggplot(mtcars) + geom_bar(aes(carb))
+
+(p1 | p2 | p4) / p3 +
+  plot_annotation(title = "Quatro gráficos legais",
+                  tag_levels = "I", tag_prefix = "Fig. ") +
+  plot_layout(nrow = 2, widths = c(1, 3),
+              heights = c(2, 1))
+```
 
 ## *Free Samples*
 
 Vocês já sabem tudo o que é necessário para fazerem visualizações perfeitas no `{ggplot2}`. Mas tem alguns outros pacotes que valhe a pena aprender.
 
 * [`{ggrepel}`](https://ggrepel.slowkow.com/): geoms para `{ggplot2}` para repelir rótulos de texto sobrepostos.
+
+```{r ggrepel}
+library(ggrepel)
+ggplot(mtcars, aes(wt, mpg, label = rownames(mtcars))) +
+  geom_label_repel() +
+  geom_point(color = 'red') +
+  theme_classic(base_size = 12)
+```
+Dá para fazer uma gambiarra
+
+```{r ggrepel-gambiarra}
+library(stringr)
+ggplot(mtcars, aes(wt, mpg, label = if_else(str_detect(rownames(mtcars), "Merc"), rownames(mtcars), NA_character_))) +
+  geom_text_repel() +
+  geom_point(color = 'red') +
+  theme_classic(base_size = 12)
+```
+
+
 * [`{gghighlight}`](https://yutannihilation.github.io/gghighlight/articles/gghighlight.html): destacar geoms no `{ggplot2}`.
+
+```{r gghighlight}
+set.seed(2)
+d <- purrr::map_dfr(
+  letters,
+  ~ tibble::tibble(
+      idx = 1:400,
+      value = cumsum(runif(400, -1, 1)),
+      type = .,
+      flag = sample(c(TRUE, FALSE), size = 400, replace = TRUE)
+    )
+)
+d %>%
+  ggplot(aes(idx, value, colour = type)) +
+  geom_line()
+```
+
+Eu posso filtrar?
+
+```{r gghighlight-2}
+d %>%
+  filter(type %in% c("g", "s")) %>% 
+  ggplot(aes(idx, value, colour = type)) +
+  geom_line()
+```
+
+A solução é usar o `{gghighlight}`:
+
+```{r gghighlight-3}
+library(gghighlight)
+d %>%
+  ggplot(aes(idx, value, colour = type)) +
+  geom_line() +
+  gghighlight(max(abs(value)) >= 20)
+```
+
 * [`{ggExtra}`](https://github.com/daattali/ggExtra): histogramas marginais em gráficos de dispersão.
+
+```{r ggExtra}
+library(ggExtra)
+plot <- mpg %>% 
+  ggplot(aes(hwy, cty)) +
+  geom_point(colour = "steelblue") 
+ggMarginal(plot)
+
+```
+
 * [`{ggridges}`](https://wilkelab.org/ggridges/): um dos meus preferidos! Gráficos de densidade múltiplos.
+
+```{r ggridges}
+library(ggridges)
+diamonds %>% 
+  ggplot(aes(price, cut, fill = as.factor(cut))) +
+  geom_density_ridges() +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  scale_fill_brewer(palette = "Set1")
+```
 
 ## Ambiente
 
 ```{r sessionInfo}
 sessionInfo()
 ```
-
