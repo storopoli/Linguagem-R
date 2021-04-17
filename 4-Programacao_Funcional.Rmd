@@ -22,6 +22,169 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::include_graphics("images/map_frosting.png")
 ```
 
+
+[`{purrr}`](https://purrr.tidyverse.org) tem a seguinte lógica:
+
+Ao invés de:
+
+```r
+for (i in 1:n) {
+  output[[i]] <- f(input[[i]])
+}
+```
+
+Você faz:
+
+```r
+library(purrr)
+list %>% map(f)    # ou map(list, f)
+```
+
+```{r exemplo-rnorm}
+library(purrr)
+1L:10L %>% map(rnorm, 5, 10)
+```
+
+
+* `map()` — sempre retorna uma `list`
+* `map_lgl()`, `map_int()`, `map_dbl()` e `map_chr()` — retornam um vetor do tipo desejado (conversão implícita)
+* `map_dfr()` e `map_dfc()` — retornaram um `data.frame` concatenando colunas (`c`) ou linhas (`r`)
+* `walk()` — usado para efeitos colaterais (side-effects)
+
+Além disso temos o `map2*` (2 listas de inputs) e o `pmap*` (lista de vetores de inputs, pode ser um `data.frame`) para múltiplos inputs.
+
+## `map_*()`
+
+Conversão implícita
+
+```{r map_dbl}
+1L:10L %>%
+  map(rnorm) %>%
+  map_dbl(mean) # igual a map_dbl(~mean(.x))
+```
+
+## Professor, e a `~`?
+
+O tio `~` (em inglês é tilde) ele funciona quando você precisa especificar funções e argumentos mais complexos:
+
+```{r map-tilde}
+c("meu", "microfone", "está", "aberto") %>% # vire um vetor de c("meuprefixo_meu", ...)
+  map_chr(~paste0("meuprefixo_", .x))
+```
+
+```{r map-ggplot}
+library(ggplot2)
+c("hp", "wt", "qsec") %>% 
+  map(~mtcars %>% 
+        ggplot(aes_string(.x, "mpg")) +
+        geom_point() +
+        geom_smooth())
+```
+
+Agora é um bom momento para introduzir o `purrr::walk`
+
+* `walk()` — usado para efeitos colaterais (*side-effects*)
+
+```{r purrr-walk}
+c("hp", "wt", "qsec") %>% 
+  walk(~ {p <- mtcars %>% 
+        ggplot(aes_string(.x, "mpg")) +
+        geom_point() +
+        geom_smooth()
+      print(p)})
+```
+
+```{r purrr-walk2}
+y <- c("mpg", "cyl", "gear")
+
+c("hp", "wt", "qsec") %>% 
+  walk2(y, ~{p <- mtcars %>% 
+        ggplot(aes_string(.x, .y)) +
+        geom_point() +
+        geom_smooth()
+      print(p)})
+```
+
+
+Agora o `purrr::pwalk()`
+
+```{r purrr-pwalk}
+x <- c("hp", "wt", "qsec")
+y <- c("mpg", "cyl", "gear")
+z <- c("vs", "am", "cyl")
+list_v <- list(x, y, z)
+
+list_v %>% 
+  pwalk(~{p <- mtcars %>% 
+        ggplot(aes_string(..1, ..2, colour = ..3)) + # e continua ..4 ..5 ..6
+        geom_point() +
+        geom_smooth()
+      print(p)})
+```
+
+Até dá para "knitar" vários markdowns
+
+```r
+c("arquivo1.Rmd", "arquivo2.Rmd", ...) %>%    # ou fs::dir_ls(glob = "*.Rmd") lê todo o diretório
+  walk(~knitr::render(.x,
+                      output_format = "html_document",
+                      output_dir = "relatorios/"))
+```
+
+## MOAH POWER! `{furrr}`
+
+`{purrr}` é single-thread então vamos usar o [`{furrr}`](https://furrr.futureverse.org).
+
+Para usar é muito fácil! Ao invés de:
+
+* `map()`
+* `map2()`
+* `pmap()`
+* `walk()`
+
+Use:
+
+* `future_map()`
+* `future_map2()`
+* `future_pmap()`
+* `future_walk()`
+
+```{r purrr-sleep}
+seq_len(8) %>% 
+  walk(~{
+    Sys.sleep(1)
+    print("Oi")})
+```
+
+Agora com o `{furrr}`:
+
+```{r furrr}
+library(furrr)
+plan(multisession) # ou coloque no `.Rprofile` `options(Ncpus = parallel::detectCores())` e `options(mc.cores = parallel::detectCores())`
+```
+
+
+```{r furrr-sleep}
+seq_len(8) %>% 
+  future_walk(~{
+    Sys.sleep(1)
+    print("Oi")},
+    .progress = TRUE)
+```
+
+Se for mexer com coisas aleatórias é importante usar o argumento:
+* `.options = furrr_options(seed = TRUE)`
+
+```{r furrr-random}
+1L:10L %>% future_map(rnorm)
+```
+
+```{r furrr-random2}
+1L:10L %>%
+  future_map(rnorm,
+             .options = furrr_options(seed = TRUE))
+```
+
 ## Ambiente
 
 ```{r sessionInfo}

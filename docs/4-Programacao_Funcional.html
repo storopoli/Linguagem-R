@@ -2429,6 +2429,17 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 </div>
 
 <div class="d-article">
+<div class="d-contents d-contents-float">
+<nav class="l-text toc figcaption" id="TOC">
+<h3>Contents</h3>
+<ul>
+<li><a href="#map_"><code>map_*()</code></a></li>
+<li><a href="#professor-e-a">Professor, e a <code>~</code>?</a></li>
+<li><a href="#moah-power-furrr">MOAH POWER! <code>{furrr}</code></a></li>
+<li><a href="#ambiente">Ambiente</a></li>
+</ul>
+</nav>
+</div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure" style="text-align: center"><span id="fig:map-frosting"></span>
@@ -2438,7 +2449,347 @@ Figure 1: Programação Funcional
 </p>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<p><a href="https://purrr.tidyverse.org"><code>{purrr}</code></a> tem a seguinte lógica:</p>
+<p>Ao invés de:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  output[[i]] <span class="ot">&lt;-</span> <span class="fu">f</span>(input[[i]])</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Você faz:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>list <span class="sc">%&gt;%</span> <span class="fu">map</span>(f)    <span class="co"># ou map(list, f)</span></span></code></pre></div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://purrr.tidyverse.org'>purrr</a></span><span class='op'>)</span>
+<span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='va'>rnorm</span>, <span class='fl'>5</span>, <span class='fl'>10</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[[1]]
+[1] -11.38116
+
+[[2]]
+[1] 13.029668  2.856573
+
+[[3]]
+[1] 10.758397  5.571244 -4.763009
+
+[[4]]
+[1] 19.659442 -1.472249 17.885089 -2.346908
+
+[[5]]
+[1] -1.388816  6.255301 -3.475424 17.935144 -1.549314
+
+[[6]]
+[1]  14.768663   8.329310   8.465768  24.315147 -12.101316   7.390186
+
+[[7]]
+[1]  6.7608059 -6.6035078  0.0735278 11.9206485  2.2138583 -6.9041138
+[7] 14.7165402
+
+[[8]]
+[1]  -4.4990203   8.9216844  -0.6888865  14.2025856  19.5619532
+[6]  25.4041054 -15.4359096   9.6327247
+
+[[9]]
+[1]  20.663960 -15.216816  11.646418  12.675556  11.251517  10.818754
+[7]   2.385407  18.036240  11.447447
+
+[[10]]
+ [1] -11.523355  19.664804  -1.211447   2.781161   6.715652   1.754814
+ [7]   4.136375 -15.435072  -2.755345  -9.002235</code></pre>
+</div>
+<ul>
+<li><code>map()</code> — sempre retorna uma <code>list</code></li>
+<li><code>map_lgl()</code>, <code>map_int()</code>, <code>map_dbl()</code> e <code>map_chr()</code> — retornam um vetor do tipo desejado (conversão implícita)</li>
+<li><code>map_dfr()</code> e <code>map_dfc()</code> — retornaram um <code>data.frame</code> concatenando colunas (<code>c</code>) ou linhas (<code>r</code>)</li>
+<li><code>walk()</code> — usado para efeitos colaterais (side-effects)</li>
+</ul>
+<p>Além disso temos o <code>map2*</code> (2 listas de inputs) e o <code>pmap*</code> (lista de vetores de inputs, pode ser um <code>data.frame</code>) para múltiplos inputs.</p>
+<h2 id="map_"><code>map_*()</code></h2>
+<p>Conversão implícita</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='va'>rnorm</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dbl</a></span><span class='op'>(</span><span class='va'>mean</span><span class='op'>)</span> <span class='co'># igual a map_dbl(~mean(.x))</span>
+</code></pre>
+</div>
+<pre><code> [1] -1.2591202 -0.6455529 -0.8104026  0.1503104 -0.7779383  0.5621727
+ [7] -0.2535561  0.6294386 -0.5932808 -0.7587242</code></pre>
+</div>
+<h2 id="professor-e-a">Professor, e a <code>~</code>?</h2>
+<p>O tio <code>~</code> (em inglês é tilde) ele funciona quando você precisa especificar funções e argumentos mais complexos:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"meu"</span>, <span class='st'>"microfone"</span>, <span class='st'>"está"</span>, <span class='st'>"aberto"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='co'># vire um vetor de c("meuprefixo_meu", ...)</span>
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_chr</a></span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>"meuprefixo_"</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[1] &quot;meuprefixo_meu&quot;       &quot;meuprefixo_microfone&quot;
+[3] &quot;meuprefixo_está&quot;      &quot;meuprefixo_aberto&quot;   </code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[[1]]</code></pre>
+<p><img src="4-Programacao_Funcional_files/figure-html5/map-ggplot-1.png" width="624" /></p>
+<pre><code>
+[[2]]</code></pre>
+<p><img src="4-Programacao_Funcional_files/figure-html5/map-ggplot-2.png" width="624" /></p>
+<pre><code>
+[[3]]</code></pre>
+<p><img src="4-Programacao_Funcional_files/figure-html5/map-ggplot-3.png" width="624" /></p>
+</div>
+<p>Agora é um bom momento para introduzir o <code>purrr::walk</code></p>
+<ul>
+<li><code>walk()</code> — usado para efeitos colaterais (<em>side-effects</em>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>walk</a></span><span class='op'>(</span><span class='op'>~</span> <span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span>
+      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+<p><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk-1.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk-2.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk-3.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mpg"</span>, <span class='st'>"cyl"</span>, <span class='st'>"gear"</span><span class='op'>)</span>
+
+<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map2.html'>walk2</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='op'>~</span><span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span>
+      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+<p><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk2-1.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk2-2.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk2-3.png" width="624" /></p>
+</div>
+<p>Agora o <code>purrr::pwalk()</code></p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mpg"</span>, <span class='st'>"cyl"</span>, <span class='st'>"gear"</span><span class='op'>)</span>
+<span class='va'>z</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"vs"</span>, <span class='st'>"am"</span>, <span class='st'>"cyl"</span><span class='op'>)</span>
+<span class='va'>list_v</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span>, <span class='va'>z</span><span class='op'>)</span>
+
+<span class='va'>list_v</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map2.html'>pwalk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>..1</span>, <span class='va'>..2</span>, colour <span class='op'>=</span> <span class='va'>..3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># e continua ..4 ..5 ..6</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span>
+      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+<p><img src="4-Programacao_Funcional_files/figure-html5/purrr-pwalk-1.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-pwalk-2.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-pwalk-3.png" width="624" /></p>
+</div>
+<p>Até dá para “knitar” vários markdowns</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="st">&quot;arquivo1.Rmd&quot;</span>, <span class="st">&quot;arquivo2.Rmd&quot;</span>, ...) <span class="sc">%&gt;%</span>    <span class="co"># ou fs::dir_ls(glob = &quot;*.Rmd&quot;) lê todo o diretório</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">walk</span>(<span class="sc">~</span>knitr<span class="sc">::</span><span class="fu">render</span>(.x,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">output_format =</span> <span class="st">&quot;html_document&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">output_dir =</span> <span class="st">&quot;relatorios/&quot;</span>))</span></code></pre></div>
+<h2 id="moah-power-furrr">MOAH POWER! <code>{furrr}</code></h2>
+<p><code>{purrr}</code> é single-thread então vamos usar o <a href="https://furrr.futureverse.org"><code>{furrr}</code></a>.</p>
+<p>Para usar é muito fácil! Ao invés de:</p>
+<ul>
+<li><code>map()</code></li>
+<li><code>map2()</code></li>
+<li><code>pmap()</code></li>
+<li><code>walk()</code></li>
+</ul>
+<p>Use:</p>
+<ul>
+<li><code>future_map()</code></li>
+<li><code>future_map2()</code></li>
+<li><code>future_pmap()</code></li>
+<li><code>future_walk()</code></li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fl'>8</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>walk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='st'>"Oi"</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;</code></pre>
+</div>
+<p>Agora com o <code>{furrr}</code>:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/DavisVaughan/furrr'>furrr</a></span><span class='op'>)</span>
+<span class='fu'>plan</span><span class='op'>(</span><span class='va'>multisession</span><span class='op'>)</span> <span class='co'># ou coloque no `.Rprofile` `options(Ncpus = parallel::detectCores())` e `options(mc.cores = parallel::detectCores())`</span>
+</code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fl'>8</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/future_map.html'>future_walk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='st'>"Oi"</span><span class='op'>)</span><span class='op'>}</span>,
+    .progress <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;
+[1] &quot;Oi&quot;</code></pre>
+</div>
+<p>Se for mexer com coisas aleatórias é importante usar o argumento: * <code>.options = furrr_options(seed = TRUE)</code></p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/future_map.html'>future_map</a></span><span class='op'>(</span><span class='va'>rnorm</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[[1]]
+[1] 0.814932
+
+[[2]]
+[1] -1.0562436  0.4637372
+
+[[3]]
+[1]  1.6050373  0.9370217 -0.6776278
+
+[[4]]
+[1]  0.7962260  0.7426522 -0.8918861  0.9338568
+
+[[5]]
+[1] -0.1801842  1.4212317 -0.2833755 -1.4184918  1.0582444
+
+[[6]]
+[1]  0.3333963  0.4046944 -0.6520585  0.1045224 -0.3571050  0.2808810
+
+[[7]]
+[1] -1.69271644  0.18286852 -0.28538567  0.01724536 -0.96633697
+[6] -0.68696768  1.73231866
+
+[[8]]
+[1]  0.2561988 -0.6950161  1.0393150 -0.7689563 -1.3695782  0.1937951
+[7] -0.1522291 -0.5333768
+
+[[9]]
+[1]  0.1196148 -0.4576666 -0.7932472 -1.0771695  0.7685329  0.1675055
+[7] -2.0190748  0.1489319  0.6352363
+
+[[10]]
+ [1]  0.8202823 -1.3235204 -0.2588914  0.7377599  0.2598685  0.2666640
+ [7]  1.4020774 -0.3432135 -0.3737338  0.8059877</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/future_map.html'>future_map</a></span><span class='op'>(</span><span class='va'>rnorm</span>,
+             .options <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/furrr_options.html'>furrr_options</a></span><span class='op'>(</span>seed <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>[[1]]
+[1] -0.1890671
+
+[[2]]
+[1]  0.7072252 -1.7045222
+
+[[3]]
+[1] 0.5836392 0.8149874 0.2078733
+
+[[4]]
+[1] -0.9889491 -1.6149687  0.8757440  0.1799311
+
+[[5]]
+[1]  1.1767969 -1.4136739  1.9540730  0.6239741 -0.4595725
+
+[[6]]
+[1]  0.9372127 -1.6093423  0.1438658 -0.5614448  1.3289207 -1.4216962
+
+[[7]]
+[1]  1.83071509  0.20727462 -0.73679714 -0.04572543  1.11853883
+[6] -1.83680047 -0.05900324
+
+[[8]]
+[1] -0.5128565 -1.7935135  1.3144587 -1.0019108  0.4888807 -0.9534464
+[7] -0.3804608  1.4291638
+
+[[9]]
+[1] -0.6642156  0.3816342  0.1062315 -0.4831790  1.1260858  0.2976840
+[7]  0.2940084 -0.5980869 -0.4259555
+
+[[10]]
+ [1]  0.69178552  0.04851470  0.24116786  1.04415916 -0.10173131
+ [6]  0.35009766 -1.22750769  0.09546966 -0.55823563  0.99247543</code></pre>
+</div>
+<h2 id="ambiente">Ambiente</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>R version 4.0.3 (2020-10-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.2 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/atlas/libblas.so.3.10.3
+LAPACK: /usr/lib/x86_64-linux-gnu/atlas/liblapack.so.3.10.3
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C          
+ [3] LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8    
+ [5] LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C             
+ [9] LC_ADDRESS=C           LC_TELEPHONE=C        
+[11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods  
+[7] base     
+
+other attached packages:
+[1] furrr_0.2.2   future_1.21.0 ggplot2_3.3.3 purrr_0.3.4  
+
+loaded via a namespace (and not attached):
+ [1] tidyselect_1.1.0  xfun_0.22         bslib_0.2.4      
+ [4] listenv_0.8.0     splines_4.0.3     lattice_0.20-41  
+ [7] colorspace_2.0-0  vctrs_0.3.7       generics_0.1.0   
+[10] htmltools_0.5.1.1 yaml_2.2.1        mgcv_1.8-33      
+[13] utf8_1.2.1        rlang_0.4.10      jquerylib_0.1.3  
+[16] pillar_1.5.1      glue_1.4.2        withr_2.4.1      
+[19] DBI_1.1.1         lifecycle_1.0.0   stringr_1.4.0    
+[22] munsell_0.5.0     gtable_0.3.0      codetools_0.2-16 
+[25] evaluate_0.14     labeling_0.4.2    knitr_1.31       
+[28] parallel_4.0.3    fansi_0.4.2       highr_0.8        
+[31] scales_1.1.1      jsonlite_1.7.2    farver_2.1.0     
+[34] parallelly_1.24.0 distill_1.2       png_0.1-7        
+[37] digest_0.6.27     stringi_1.5.3     dplyr_1.0.5      
+[40] grid_4.0.3        tools_4.0.3       magrittr_2.0.1   
+[43] sass_0.3.1        tibble_3.1.0      crayon_1.4.1     
+[46] pkgconfig_2.0.3   downlit_0.2.1     ellipsis_0.3.1   
+[49] Matrix_1.2-18     assertthat_0.2.1  rmarkdown_2.7    
+[52] R6_2.5.0          globals_0.14.0    nlme_3.1-149     
+[55] compiler_4.0.3   </code></pre>
+</div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
