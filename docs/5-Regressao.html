@@ -2429,6 +2429,22 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 </div>
 
 <div class="d-article">
+<div class="d-contents d-contents-float">
+<nav class="l-text toc figcaption" id="TOC">
+<h3>Contents</h3>
+<ul>
+<li><a href="#regressão-linear">Regressão Linear</a>
+<ul>
+<li><a href="#interpretações">Interpretações</a></li>
+<li><a href="#interpretação-geométrica">Interpretação Geométrica</a></li>
+<li><a href="#interpretação-matemática">Interpretação Matemática</a></li>
+</ul></li>
+<li><a href="#regressão-logística">Regressão Logística</a></li>
+<li><a href="#regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</a></li>
+<li><a href="#ambiente">Ambiente</a></li>
+</ul>
+</nav>
+</div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure" style="text-align: center"><span id="fig:stats"></span>
@@ -2438,7 +2454,156 @@ Figure 1: Stats
 </p>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h2 id="regressão-linear">Regressão Linear</h2>
+<p><strong>Regressão linear permite com que você use uma ou mais variáveis discretas ou contínuas como variáveis independentes e mensurar o poder de associação com a variável dependente, que deve ser contínua</strong>.</p>
+<h3 id="interpretações">Interpretações</h3>
+<p>Para compreender regressão linear podemos usar de três interpretações distintas mas complementares:</p>
+<ul>
+<li><strong>Interpretação Geométrica</strong>: Regressão como uma reta.</li>
+<li><strong>Interpretação Matemática</strong>: Regressão como otimização.</li>
+<li><strong>Interpretação Estatística</strong>: Regressão como poder de associação entre variáveis controlando para diversos outros efeitos.</li>
+</ul>
+<h3 id="interpretação-geométrica">Interpretação Geométrica</h3>
+<p>Imagine que seus dados são pontos que vivem em um espaço multidimensional. <strong>A regressão é uma técnica para encontrar a melhor reta<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> entre o conjunto de dados levando em conta todas as observações</strong>.</p>
+<p>Isto é valido para qualquer espaço multidimensional, até para além de 3-D. Vamos mostrar um exemplo em 2-D da relação entre <code>x</code> e <code>y</code>, mas isto poder ser estendido para a relação <code>x1</code>, <code>x2</code>, … e <code>y</code>.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:regressao-reta"></span>
+<img src="5-Regressao_files/figure-html5/regressao-reta-1.png" alt="Uma relação entre variáveis representada por uma reta de tendência" width="624" />
+<p class="caption">
+Figure 2: Uma relação entre variáveis representada por uma reta de tendência
+</p>
+</div>
+</div>
+<p>Vejam que regressão linear usando apenas uma variável dependente e uma variável independente é a mesma coisa que que correlação.</p>
+<h3 id="interpretação-matemática">Interpretação Matemática</h3>
+<p><strong>A interpretação matemática é vista como uma otimização: encontrar a melhor reta entre os pontos que minimiza o erro quadrático médio (<em>mean squared error</em> – MSE)</strong>. Ao escolhermos a melhor reta, devemos escolher a melhor reta que minimiza as distâncias entre os pontos, sendo que podemos errar para mais ou para menos. Para evitarmos que os erros se cancelem, precisamos eliminar o sinal negativo de alguns erros e convertê-los para valores positivos. Para isso, pegamos todas os erros (diferenças entre o valor previsto pela reta e o valor verdadeiro) e elevamos ao quadrado (assim todo número negativo se tornará positivo e todo positivo se manterá positivo). Portanto, a <strong>regressão se torna a busca do menor valor de uma função erro (MSE)</strong>.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:regressao-mse"></span>
+<img src="5-Regressao_files/figure-html5/regressao-mse-1.png" alt="A melhor reta que minimiza a distância dos erros" width="624" />
+<p class="caption">
+Figure 3: A melhor reta que minimiza a distância dos erros
+</p>
+</div>
+</div>
+<h4 id="interpretação-estatística">Interpretação Estatística</h4>
+<p>A regressão linear usando uma única variável independente contínua se torna exatamente uma correlação. Agora quando empregamos mais de uma variável independente, a interpretação da regressão se torna: <strong>“O efeito de <code>X</code> em <code>Y</code> mantendo <code>Z</code> fixo”</strong>. Isto quer dizer que a regressão linear <strong>controla os efeitos das diferentes variáveis independentes ao calcular o efeito de uma certa variável independente</strong>. Esta é o que chamamos de <strong>interpretação estatística</strong> da regressão linear.</p>
+<p>Por exemplo, digamos que você esteja em busca dos fatores que acarretam ataque cardíaco. Você coleta dados de pessoas que quantifiquem as seguintes variáveis: sono, stress, tabagismo, sedentarismo, entre outros… A regressão te permite mensurar o efeito de qualquer uma dessas variáveis na prevalência de ataque cardíaco controlando para outros efeitos. Em outras palavras, é possível mensurar o efeito de stress em ataque cardíaco, mantendo fixo os efeitos de sono, tabagismo, sedentarismo, etc… Isso permite você isolar o efeito de uma variável sem deixar que outras variáveis a influenciem na mensuração da sua relação com a variável dependente (no nosso caso: ataque cardíaco).</p>
+<h2 id="regressão-logística">Regressão Logística</h2>
+<p>Uma <strong>regressão logística se comporta exatamente como um modelo linear</strong>: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes, mais uma constante. Porém ao invés de retornar um valor contínuo, como a regressão linear, retorna a função logística desse valor.</p>
+<p><span class="math display">\[\operatorname{Logística}(x) = \frac{1}{1 + e^{(-x)}}\]</span></p>
+<p><strong>A função logística é uma <del>gambiarra</del> transformação que pega <em>qualquer</em> valor entre menos infinito <span class="math inline">\(-\infty\)</span> e mais infinito <span class="math inline">\(+\infty\)</span> e transforma em um valor entre 0 e 1</strong>. Veja na figura <a href="#fig:logit">4</a> uma representação gráfica da função logística.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>
+  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>10</span>, <span class='fl'>10</span>, length.out <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,
+  logit <span class='op'>=</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>logit</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<div class="figure"><span id="fig:logit"></span>
+<img src="5-Regressao_files/figure-html5/logit-1.png" alt="Função Logística" width="624" />
+<p class="caption">
+Figure 4: Função Logística
+</p>
+</div>
+</div>
+<p>Ou seja, a função logística é a candidata ideal para quando precisamos converter algo contínuo sem restrições para algo contínuo restrito entre 0 e 1. Por isso ela é usada quando precisamos que um modelo tenha como variável dependente uma probabilidade (lembrando que qualquer numero real entre 0 e 1 é uma probabilidade válida). No caso de uma variável dependente binária, podemos usar essa probabilidade como a chance da variável dependente tomar valor de 0 ou de 1.</p>
+<h2 id="regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</h2>
+<p>Uma regressão de Poisson se comporta exatamente como um modelo linear: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes <span class="math inline">\(\mathbf{X}\)</span> pelos coeficientes estimados <span class="math inline">\(\boldsymbol{\beta}\)</span>, mais uma constante <span class="math inline">\(\alpha\)</span>. Porém ao invés de retornar um valor contínuo <span class="math inline">\(y\)</span>, como a regressão linear, retorna o logarítmo natural desse valor <span class="math inline">\(\log(y)\)</span>.</p>
+<p><span class="math display">\[
+\log(y)= \theta_0 + \theta_1 x_1 + \theta_2 x_2 + \dots + \theta_n x_n
+\]</span></p>
+<p>que é o mesmo que</p>
+<p><span class="math display">\[
+y = e^{(\theta_0 + \theta_1 x_1 + \theta_2 x_2 + \dots + \theta_n x_n)}
+\]</span></p>
+<ul>
+<li><span class="math inline">\(\theta\)</span> - parâmetros do modelo
+<ul>
+<li><span class="math inline">\(\theta_0\)</span> - constante</li>
+<li><span class="math inline">\(\theta_1, \theta_2, \dots\)</span> - coeficientes das variáveis independentes <span class="math inline">\(x_1, x_2, \dots\)</span></li>
+</ul></li>
+<li><span class="math inline">\(n\)</span> - número de variáveis independentes</li>
+</ul>
+<p>A função <span class="math inline">\(e^x\)</span> é chamada de função exponencial. Veja a figura <a href="#fig:exponential-function">5</a> para uma intuição gráfica da função exponencial:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>
+  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>10</span>, length.out <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,
+  y <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
+  <span class='op'>)</span>,
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ylab</a></span><span class='op'>(</span><span class='st'>"Exponencial(x)"</span><span class='op'>)</span>
+</code></pre>
+</div>
+<div class="figure"><span id="fig:exponential-function"></span>
+<img src="5-Regressao_files/figure-html5/exponential-function-1.png" alt="Função Exponencial" width="624" />
+<p class="caption">
+Figure 5: Função Exponencial
+</p>
+</div>
+</div>
+<p>Regressão de Poisson é usada quando a nossa variável dependente só pode tomar valores positivos, geralmente em contextos de dados de contagem.</p>
+<h2 id="ambiente">Ambiente</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>R version 4.0.3 (2020-10-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.2 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/atlas/libblas.so.3.10.3
+LAPACK: /usr/lib/x86_64-linux-gnu/atlas/liblapack.so.3.10.3
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C          
+ [3] LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8    
+ [5] LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C             
+ [9] LC_ADDRESS=C           LC_TELEPHONE=C        
+[11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods  
+[7] base     
+
+other attached packages:
+[1] broom_0.7.5     patchwork_1.1.1 dplyr_1.0.5     ggplot2_3.3.3  
+
+loaded via a namespace (and not attached):
+ [1] bslib_0.2.4       compiler_4.0.3    pillar_1.5.1     
+ [4] jquerylib_0.1.3   highr_0.8         tools_4.0.3      
+ [7] digest_0.6.27     downlit_0.2.1     lattice_0.20-41  
+[10] nlme_3.1-149      jsonlite_1.7.2    evaluate_0.14    
+[13] lifecycle_1.0.0   tibble_3.1.0      gtable_0.3.0     
+[16] mgcv_1.8-33       pkgconfig_2.0.3   png_0.1-7        
+[19] rlang_0.4.10      Matrix_1.2-18     DBI_1.1.1        
+[22] distill_1.2       yaml_2.2.1        xfun_0.22        
+[25] withr_2.4.1       stringr_1.4.0     knitr_1.31       
+[28] generics_0.1.0    vctrs_0.3.7       sass_0.3.1       
+[31] tidyselect_1.1.0  grid_4.0.3        glue_1.4.2       
+[34] R6_2.5.0          fansi_0.4.2       rmarkdown_2.7    
+[37] tidyr_1.1.3       farver_2.1.0      purrr_0.3.4      
+[40] magrittr_2.0.1    backports_1.2.1   splines_4.0.3    
+[43] scales_1.1.1      htmltools_0.5.1.1 ellipsis_0.3.1   
+[46] assertthat_0.2.1  colorspace_2.0-0  labeling_0.4.2   
+[49] utf8_1.2.1        stringi_1.5.3     munsell_0.5.0    
+[52] crayon_1.4.1     </code></pre>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>tecnicamente reta aqui se refere um hiperplano que é subespaço de dimensão <span class="math inline">\(n-1\)</span> de um espaço de dimensão <span class="math inline">\(n\)</span>. Por exemplo, uma reta é um hiperplano 1-D de uma plano 2-D; um plano 2-D é um hiperplano de um plano 3-D; e assim por diante…<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
@@ -2446,6 +2611,15 @@ Figure 1: Stats
 <div class="d-appendix">
 </div>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 
 <!--radix_placeholder_site_after_body-->
 <!--/radix_placeholder_site_after_body-->

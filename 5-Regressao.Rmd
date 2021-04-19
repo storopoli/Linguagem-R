@@ -22,6 +22,117 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::include_graphics("images/not_normal.png")
 ```
 
+## Regressão Linear
+
+**Regressão linear permite com que você use uma ou mais variáveis discretas ou contínuas como variáveis independentes e mensurar o poder de associação com a variável dependente, que deve ser contínua**.
+
+### Interpretações
+
+Para compreender regressão linear podemos usar de três interpretações distintas mas complementares:
+
+* **Interpretação Geométrica**: Regressão como uma reta.
+* **Interpretação Matemática**: Regressão como otimização.
+* **Interpretação Estatística**: Regressão como poder de associação entre variáveis controlando para diversos outros efeitos.
+
+### Interpretação Geométrica
+
+Imagine que seus dados são pontos que vivem em um espaço multidimensional. **A regressão é uma técnica para encontrar a melhor reta^[tecnicamente reta aqui se refere um hiperplano que é subespaço de dimensão $n-1$ de um espaço de dimensão $n$. Por exemplo, uma reta é um hiperplano 1-D de uma plano 2-D; um plano 2-D é um hiperplano de um plano 3-D; e assim por diante...] entre o conjunto de dados levando em conta todas as observações**.
+
+Isto é valido para qualquer espaço multidimensional, até para além de 3-D. Vamos mostrar um exemplo em 2-D da relação entre `x` e `y`, mas isto poder ser estendido para a relação `x1`, `x2`, ... e `y`.
+
+```{r regressao-reta, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Uma relação entre variáveis representada por uma reta de tendência'}
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+# Generate synthetic data with a clear linear relationship
+sim <- tibble(
+  x = seq(from = 1, to = 300),
+  y = rnorm(n = 300, mean = x + 2, sd = 25))
+p1 <- sim %>%
+  ggplot(aes(x = x, y = y)) +
+  geom_point(color = "steelblue")
+p2 <- p1 +
+  geom_smooth(method = "lm", se =  FALSE, color = "Red")
+p1 + p2 + plot_layout(nrow = 1, widths = 1)
+```
+
+Vejam que regressão linear usando apenas uma variável dependente e uma variável independente é a mesma coisa que que correlação.
+
+### Interpretação Matemática
+
+**A interpretação matemática é vista como uma otimização: encontrar a melhor reta entre os pontos que minimiza o erro quadrático médio (*mean squared error* -- MSE)**. Ao escolhermos a melhor reta, devemos escolher a melhor reta que minimiza as distâncias entre os pontos, sendo que podemos errar para mais ou para menos. Para evitarmos que os erros se cancelem, precisamos eliminar o sinal negativo de alguns erros e convertê-los para valores positivos. Para isso, pegamos todas os erros (diferenças entre o valor previsto pela reta e o valor verdadeiro) e elevamos ao quadrado (assim todo número negativo se tornará positivo e todo positivo se manterá positivo). Portanto, a **regressão se torna a busca do menor valor de uma função erro (MSE)**.
+
+```{r regressao-mse, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='A melhor reta que minimiza a distância dos erros'}
+library(broom)
+lm_sim <- augment(lm(y ~ x, data = sim))
+p3 <- lm_sim %>%
+  ggplot(aes(x = x, y = y)) +
+  geom_point(color = "steelblue") +
+  geom_smooth(method = "lm", se =  FALSE, color = "Red")
+p4 <- p3 +
+  geom_segment(aes(xend = x, yend = .fitted))
+p3 + p4 + plot_layout(nrow = 1, widths = 1)
+```
+
+#### Interpretação Estatística
+
+A regressão linear usando uma única variável independente contínua se torna exatamente uma correlação. Agora quando empregamos mais de uma variável independente, a interpretação da regressão se torna: **"O efeito de `X` em `Y` mantendo `Z` fixo"**. Isto quer dizer que a regressão linear **controla os efeitos das diferentes variáveis independentes ao calcular o efeito de uma certa variável independente**. Esta é o que chamamos de **interpretação estatística** da regressão linear.
+
+Por exemplo, digamos que você esteja em busca dos fatores que acarretam ataque cardíaco. Você coleta dados de pessoas que quantifiquem as seguintes variáveis: sono, stress, tabagismo, sedentarismo, entre outros... A regressão te permite mensurar o efeito de qualquer uma dessas variáveis na prevalência de ataque cardíaco controlando para outros efeitos. Em outras palavras, é possível mensurar o efeito de stress em ataque cardíaco, mantendo fixo os efeitos de sono, tabagismo, sedentarismo, etc... Isso permite você isolar o efeito de uma variável sem deixar que outras variáveis a influenciem na mensuração da sua relação com a variável dependente (no nosso caso: ataque cardíaco).
+
+## Regressão Logística
+
+Uma **regressão logística se comporta exatamente como um modelo linear**: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes, mais uma constante. Porém ao invés de retornar um valor contínuo, como a regressão linear, retorna a função logística desse valor.
+
+$$\operatorname{Logística}(x) = \frac{1}{1 + e^{(-x)}}$$
+
+**A função logística é uma ~~gambiarra~~ transformação que pega *qualquer* valor entre menos infinito $-\infty$ e mais infinito $+\infty$ e transforma em um valor entre 0 e 1**. Veja na figura \@ref(fig:logit) uma representação gráfica da função logística.
+
+```{r logit, warning=FALSE, message=FALSE, fig.cap='Função Logística'}
+library(dplyr)
+library(ggplot2)
+tibble(
+  x = seq(-10, 10, length.out = 100),
+  logit = 1 / (1 + exp(-x))) %>%
+  ggplot(aes(x, logit)) +
+  geom_line()
+```
+
+Ou seja, a função logística é a candidata ideal para quando precisamos converter algo contínuo sem restrições para algo contínuo restrito entre 0 e 1. Por isso ela é usada quando precisamos que um modelo tenha como variável dependente uma probabilidade (lembrando que qualquer numero real entre 0 e 1 é uma probabilidade válida). No caso de uma variável dependente binária, podemos usar essa probabilidade como a chance da variável dependente tomar valor de 0 ou de 1.
+
+## Regressão de Poisson - Dados de Contagem
+
+Uma regressão de Poisson se comporta exatamente como um modelo linear: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes $\mathbf{X}$ pelos coeficientes estimados $\boldsymbol{\beta}$, mais uma constante $\alpha$. Porém ao invés de retornar um valor contínuo $y$, como a regressão linear, retorna o logarítmo natural desse valor $\log(y)$.
+
+$$
+\log(y)= \theta_0 + \theta_1 x_1 + \theta_2 x_2 + \dots + \theta_n x_n
+$$
+
+que é o mesmo que
+
+$$
+y = e^{(\theta_0 + \theta_1 x_1 + \theta_2 x_2 + \dots + \theta_n x_n)}
+$$
+
+* $\theta$ - parâmetros do modelo
+  * $\theta_0$ - constante
+  * $\theta_1, \theta_2, \dots$ - coeficientes das variáveis independentes $x_1, x_2, \dots$
+
+* $n$ - número de variáveis independentes
+
+A função $e^x$ é chamada de função exponencial. Veja a figura \@ref(fig:exponential-function) para uma intuição gráfica da função exponencial:
+
+```{r exponential-function, fig.cap='Função Exponencial'}
+ggplot(data = tibble(
+  x = seq(0, 10, length.out = 100),
+  y =  exp(x)
+  ),
+  aes(x, y)) +
+  geom_line(size = 2, color = "steelblue") +
+  ylab("Exponencial(x)")
+```
+
+Regressão de Poisson é usada quando a nossa variável dependente só pode tomar valores positivos, geralmente em contextos de dados de contagem.
 
 ## Ambiente
 
