@@ -80,6 +80,15 @@ A regressão linear usando uma única variável independente contínua se torna 
 
 Por exemplo, digamos que você esteja em busca dos fatores que acarretam ataque cardíaco. Você coleta dados de pessoas que quantifiquem as seguintes variáveis: sono, stress, tabagismo, sedentarismo, entre outros... A regressão te permite mensurar o efeito de qualquer uma dessas variáveis na prevalência de ataque cardíaco controlando para outros efeitos. Em outras palavras, é possível mensurar o efeito de stress em ataque cardíaco, mantendo fixo os efeitos de sono, tabagismo, sedentarismo, etc... Isso permite você isolar o efeito de uma variável sem deixar que outras variáveis a influenciem na mensuração da sua relação com a variável dependente (no nosso caso: ataque cardíaco).
 
+### Exemplo - Score de QI de crianças
+
+Para o nosso exemplo, usarei um *dataset* famoso chamado `kidiq` que está incluído no diretório `datasets/`. São dados de uma *survey* de mulheres adultas norte-americanas e seus respectivos filhos. Datado de 2007 possui 434 observações e 4 variáveis:
+
+-   `kid_score`: QI da criança
+-   `mom_hs`: binária (0 ou 1) se a mãe possui diploma de ensino médio
+-   `mom_iq`: QI da mãe
+-   `mom_age`: idade da mãe
+
 ## Regressão Logística
 
 Uma **regressão logística se comporta exatamente como um modelo linear**: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes, mais uma constante. Porém ao invés de retornar um valor contínuo, como a regressão linear, retorna a função logística desse valor.
@@ -99,6 +108,18 @@ tibble(
 ```
 
 Ou seja, a função logística é a candidata ideal para quando precisamos converter algo contínuo sem restrições para algo contínuo restrito entre 0 e 1. Por isso ela é usada quando precisamos que um modelo tenha como variável dependente uma probabilidade (lembrando que qualquer numero real entre 0 e 1 é uma probabilidade válida). No caso de uma variável dependente binária, podemos usar essa probabilidade como a chance da variável dependente tomar valor de 0 ou de 1.
+
+### Exemplo - Propensão a mudar de poço de água contaminado
+
+Para exemplo, usaremos um *dataset* chamado `wells` que está incluído no diretório `datasets/`. É uma survey com 3.200 residentes de uma pequena área de Bangladesh na qual os lençóis freáticos estão contaminados por arsênico. Respondentes com altos níveis de arsênico nos seus poços foram encorajados para trocar a sua fonte de água para uma níveis seguros de arsênico.
+
+Possui as seguintes variáveis:
+
+-   `switch`: dependente indicando se o respondente trocou ou não de poço
+-   `arsenic`: nível de arsênico do poço do respondente
+-   `dist`: distância em metros da casa do respondente até o poço seguro mais próximo
+-   `association`: *dummy* se os membros da casa do respondente fazem parte de alguma organização da comunidade
+-   `educ`: quantidade de anos de educação que o chefe da família respondente possui
 
 ## Regressão de Poisson - Dados de Contagem
 
@@ -133,6 +154,18 @@ ggplot(data = tibble(
 ```
 
 Regressão de Poisson é usada quando a nossa variável dependente só pode tomar valores positivos, geralmente em contextos de dados de contagem.
+
+### Exemplo Poisson - Exterminação de baratas
+
+Para exemplo, usaremos um *dataset* chamado `roaches` que está incluído no diretório `datasets/`. É uma base de dados com 262 observações sobre a eficácia de um sistema de controle de pragas em reduzir o número de baratas (*roaches*) em apartamentos urbanos.
+
+Possui as seguintes variáveis:
+
+-   `y`: variável dependente - número de baratas mortas
+-   `roach1`: número de baratas antes da dedetização
+-   `treatment`: *dummy* para indicar se o apartamento foi dedetizado ou não
+-   `senior`: *dummy* para indicar se há apenas idosos no apartamento
+-   `exposure2`: número de dias que as armadilhas de baratas foram usadas
 
 ## Ambiente
 

@@ -2438,9 +2438,16 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <li><a href="#interpretações">Interpretações</a></li>
 <li><a href="#interpretação-geométrica">Interpretação Geométrica</a></li>
 <li><a href="#interpretação-matemática">Interpretação Matemática</a></li>
+<li><a href="#exemplo---score-de-qi-de-crianças">Exemplo - Score de QI de crianças</a></li>
 </ul></li>
-<li><a href="#regressão-logística">Regressão Logística</a></li>
-<li><a href="#regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</a></li>
+<li><a href="#regressão-logística">Regressão Logística</a>
+<ul>
+<li><a href="#exemplo---propensão-a-mudar-de-poço-de-água-contaminado">Exemplo - Propensão a mudar de poço de água contaminado</a></li>
+</ul></li>
+<li><a href="#regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</a>
+<ul>
+<li><a href="#exemplo-poisson---exterminação-de-baratas">Exemplo Poisson - Exterminação de baratas</a></li>
+</ul></li>
 <li><a href="#ambiente">Ambiente</a></li>
 </ul>
 </nav>
@@ -2488,6 +2495,14 @@ Figure 3: A melhor reta que minimiza a distância dos erros
 <h4 id="interpretação-estatística">Interpretação Estatística</h4>
 <p>A regressão linear usando uma única variável independente contínua se torna exatamente uma correlação. Agora quando empregamos mais de uma variável independente, a interpretação da regressão se torna: <strong>“O efeito de <code>X</code> em <code>Y</code> mantendo <code>Z</code> fixo”</strong>. Isto quer dizer que a regressão linear <strong>controla os efeitos das diferentes variáveis independentes ao calcular o efeito de uma certa variável independente</strong>. Esta é o que chamamos de <strong>interpretação estatística</strong> da regressão linear.</p>
 <p>Por exemplo, digamos que você esteja em busca dos fatores que acarretam ataque cardíaco. Você coleta dados de pessoas que quantifiquem as seguintes variáveis: sono, stress, tabagismo, sedentarismo, entre outros… A regressão te permite mensurar o efeito de qualquer uma dessas variáveis na prevalência de ataque cardíaco controlando para outros efeitos. Em outras palavras, é possível mensurar o efeito de stress em ataque cardíaco, mantendo fixo os efeitos de sono, tabagismo, sedentarismo, etc… Isso permite você isolar o efeito de uma variável sem deixar que outras variáveis a influenciem na mensuração da sua relação com a variável dependente (no nosso caso: ataque cardíaco).</p>
+<h3 id="exemplo---score-de-qi-de-crianças">Exemplo - Score de QI de crianças</h3>
+<p>Para o nosso exemplo, usarei um <em>dataset</em> famoso chamado <code>kidiq</code> que está incluído no diretório <code>datasets/</code>. São dados de uma <em>survey</em> de mulheres adultas norte-americanas e seus respectivos filhos. Datado de 2007 possui 434 observações e 4 variáveis:</p>
+<ul>
+<li><code>kid_score</code>: QI da criança</li>
+<li><code>mom_hs</code>: binária (0 ou 1) se a mãe possui diploma de ensino médio</li>
+<li><code>mom_iq</code>: QI da mãe</li>
+<li><code>mom_age</code>: idade da mãe</li>
+</ul>
 <h2 id="regressão-logística">Regressão Logística</h2>
 <p>Uma <strong>regressão logística se comporta exatamente como um modelo linear</strong>: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes, mais uma constante. Porém ao invés de retornar um valor contínuo, como a regressão linear, retorna a função logística desse valor.</p>
 <p><span class="math display">\[\operatorname{Logística}(x) = \frac{1}{1 + e^{(-x)}}\]</span></p>
@@ -2511,6 +2526,16 @@ Figure 4: Função Logística
 </div>
 </div>
 <p>Ou seja, a função logística é a candidata ideal para quando precisamos converter algo contínuo sem restrições para algo contínuo restrito entre 0 e 1. Por isso ela é usada quando precisamos que um modelo tenha como variável dependente uma probabilidade (lembrando que qualquer numero real entre 0 e 1 é uma probabilidade válida). No caso de uma variável dependente binária, podemos usar essa probabilidade como a chance da variável dependente tomar valor de 0 ou de 1.</p>
+<h3 id="exemplo---propensão-a-mudar-de-poço-de-água-contaminado">Exemplo - Propensão a mudar de poço de água contaminado</h3>
+<p>Para exemplo, usaremos um <em>dataset</em> chamado <code>wells</code> que está incluído no diretório <code>datasets/</code>. É uma survey com 3.200 residentes de uma pequena área de Bangladesh na qual os lençóis freáticos estão contaminados por arsênico. Respondentes com altos níveis de arsênico nos seus poços foram encorajados para trocar a sua fonte de água para uma níveis seguros de arsênico.</p>
+<p>Possui as seguintes variáveis:</p>
+<ul>
+<li><code>switch</code>: dependente indicando se o respondente trocou ou não de poço</li>
+<li><code>arsenic</code>: nível de arsênico do poço do respondente</li>
+<li><code>dist</code>: distância em metros da casa do respondente até o poço seguro mais próximo</li>
+<li><code>association</code>: <em>dummy</em> se os membros da casa do respondente fazem parte de alguma organização da comunidade</li>
+<li><code>educ</code>: quantidade de anos de educação que o chefe da família respondente possui</li>
+</ul>
 <h2 id="regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</h2>
 <p>Uma regressão de Poisson se comporta exatamente como um modelo linear: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes <span class="math inline">\(\mathbf{X}\)</span> pelos coeficientes estimados <span class="math inline">\(\boldsymbol{\beta}\)</span>, mais uma constante <span class="math inline">\(\alpha\)</span>. Porém ao invés de retornar um valor contínuo <span class="math inline">\(y\)</span>, como a regressão linear, retorna o logarítmo natural desse valor <span class="math inline">\(\log(y)\)</span>.</p>
 <p><span class="math display">\[
@@ -2548,6 +2573,16 @@ Figure 5: Função Exponencial
 </div>
 </div>
 <p>Regressão de Poisson é usada quando a nossa variável dependente só pode tomar valores positivos, geralmente em contextos de dados de contagem.</p>
+<h3 id="exemplo-poisson---exterminação-de-baratas">Exemplo Poisson - Exterminação de baratas</h3>
+<p>Para exemplo, usaremos um <em>dataset</em> chamado <code>roaches</code> que está incluído no diretório <code>datasets/</code>. É uma base de dados com 262 observações sobre a eficácia de um sistema de controle de pragas em reduzir o número de baratas (<em>roaches</em>) em apartamentos urbanos.</p>
+<p>Possui as seguintes variáveis:</p>
+<ul>
+<li><code>y</code>: variável dependente - número de baratas mortas</li>
+<li><code>roach1</code>: número de baratas antes da dedetização</li>
+<li><code>treatment</code>: <em>dummy</em> para indicar se o apartamento foi dedetizado ou não</li>
+<li><code>senior</code>: <em>dummy</em> para indicar se há apenas idosos no apartamento</li>
+<li><code>exposure2</code>: número de dias que as armadilhas de baratas foram usadas</li>
+</ul>
 <h2 id="ambiente">Ambiente</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
