@@ -89,6 +89,35 @@ Para o nosso exemplo, usarei um *dataset* famoso chamado `kidiq` que está inclu
 -   `mom_iq`: QI da mãe
 -   `mom_age`: idade da mãe
 
+```{r kidiq}
+library(readr)
+kidiq <- read_csv("datasets/kidiq.csv", col_types = "_didi")
+```
+#### Como especificar um modelo em R usando a sintaxe de "formula"
+
+Podemos espeficiar modelos usando a sintaxe de formula:
+
+```r
+y ~ x1 + x2 + ...
+```
+
+```{r kidiq-model1}
+kidiq_1 <- lm(kid_score ~ mom_iq, data = kidiq)
+summary(kidiq_1)
+```
+
+```{r kidiq-model2}
+kidiq_2 <- lm(kid_score ~ mom_iq + mom_hs, data = kidiq)
+summary(kidiq_2)
+```
+
+```{r kidiq-model3}
+kidiq_3 <- lm(kid_score ~ mom_iq * mom_hs, data = kidiq)
+summary(kidiq_3)
+```
+
+Se você quiser *plotar* modelos de regressão há o pacote `{ggeffect}`.
+
 ## Regressão Logística
 
 Uma **regressão logística se comporta exatamente como um modelo linear**: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes, mais uma constante. Porém ao invés de retornar um valor contínuo, como a regressão linear, retorna a função logística desse valor.
@@ -120,6 +149,31 @@ Possui as seguintes variáveis:
 -   `dist`: distância em metros da casa do respondente até o poço seguro mais próximo
 -   `association`: *dummy* se os membros da casa do respondente fazem parte de alguma organização da comunidade
 -   `educ`: quantidade de anos de educação que o chefe da família respondente possui
+
+```{r wells}
+wells <- read_csv("datasets/wells.csv", col_types = "iddii")
+```
+
+```{r wells-model}
+wells1 <- glm(switch ~ arsenic + dist + educ + assoc,
+              data = wells,
+              family = binomial)
+summary(wells1)
+```
+
+Vamos pegar o `exp()` dos coeficientes:
+
+```{r exp-logit}
+exp(wells1$coefficients)
+```
+
+```{r arsenic}
+library(ggplot2)
+wells %>% 
+  ggplot(aes(arsenic)) +
+  geom_histogram()
+```
+
 
 ## Regressão de Poisson - Dados de Contagem
 
@@ -166,6 +220,42 @@ Possui as seguintes variáveis:
 -   `treatment`: *dummy* para indicar se o apartamento foi dedetizado ou não
 -   `senior`: *dummy* para indicar se há apenas idosos no apartamento
 -   `exposure2`: número de dias que as armadilhas de baratas foram usadas
+
+```{r roaches}
+roaches <- read_csv("datasets/roaches.csv", col_types = "idiid")
+```
+
+```{r roaches-model}
+roaches1 <- glm(
+  y ~ roach1 + treatment + senior + exposure2,
+  data = roaches,
+  family = poisson
+)
+summary(roaches1)
+```
+
+Vamos pegar o `exp()` dos coeficientes:
+
+```{r exp-poisson}
+exp(roaches1$coefficients)
+```
+
+## Como *plotar* modelos com o `{ggeffects}`
+
+Podemos usar o pacote [`{ggeffects}](https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html) para *plotar* objetos `lm` e `glm`
+
+```{r ggeffects-lm}
+library(ggeffects)
+plot(ggeffect(kidiq_3))
+```
+
+```{r ggeffects-glm-logit}
+plot(ggeffect(wells1))
+```
+
+```{r ggeffects-glm-poisson}
+plot(ggeffect(roaches1))
+```
 
 ## Ambiente
 

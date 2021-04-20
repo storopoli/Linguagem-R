@@ -2448,6 +2448,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li><a href="#exemplo-poisson---exterminação-de-baratas">Exemplo Poisson - Exterminação de baratas</a></li>
 </ul></li>
+<li><a href="#como-plotar-modelos-com-o-ggeffects">Como <em>plotar</em> modelos com o <code>{ggeffects}</code></a></li>
 <li><a href="#ambiente">Ambiente</a></li>
 </ul>
 </nav>
@@ -2503,6 +2504,95 @@ Figure 3: A melhor reta que minimiza a distância dos erros
 <li><code>mom_iq</code>: QI da mãe</li>
 <li><code>mom_age</code>: idade da mãe</li>
 </ul>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://readr.tidyverse.org'>readr</a></span><span class='op'>)</span>
+<span class='va'>kidiq</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/kidiq.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"_didi"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<h4 id="como-especificar-um-modelo-em-r-usando-a-sintaxe-de-formula">Como especificar um modelo em R usando a sintaxe de “formula”</h4>
+<p>Podemos espeficiar modelos usando a sintaxe de formula:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>y <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> ...</span></code></pre></div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>kidiq_1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_1</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>
+Call:
+lm(formula = kid_score ~ mom_iq, data = kidiq)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-56.753 -12.074   2.217  11.710  47.691 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 25.79978    5.91741    4.36 1.63e-05 ***
+mom_iq       0.60997    0.05852   10.42  &lt; 2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 18.27 on 432 degrees of freedom
+Multiple R-squared:  0.201, Adjusted R-squared:  0.1991 
+F-statistic: 108.6 on 1 and 432 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>kidiq_2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span> <span class='op'>+</span> <span class='va'>mom_hs</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_2</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>
+Call:
+lm(formula = kid_score ~ mom_iq + mom_hs, data = kidiq)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-52.873 -12.663   2.404  11.356  49.545 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 25.73154    5.87521   4.380 1.49e-05 ***
+mom_iq       0.56391    0.06057   9.309  &lt; 2e-16 ***
+mom_hs       5.95012    2.21181   2.690  0.00742 ** 
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 18.14 on 431 degrees of freedom
+Multiple R-squared:  0.2141,    Adjusted R-squared:  0.2105 
+F-statistic: 58.72 on 2 and 431 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>kidiq_3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span> <span class='op'>*</span> <span class='va'>mom_hs</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_3</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>
+Call:
+lm(formula = kid_score ~ mom_iq * mom_hs, data = kidiq)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-52.092 -11.332   2.066  11.663  43.880 
+
+Coefficients:
+              Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   -11.4820    13.7580  -0.835 0.404422    
+mom_iq          0.9689     0.1483   6.531 1.84e-10 ***
+mom_hs         51.2682    15.3376   3.343 0.000902 ***
+mom_iq:mom_hs  -0.4843     0.1622  -2.985 0.002994 ** 
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 17.97 on 430 degrees of freedom
+Multiple R-squared:  0.2301,    Adjusted R-squared:  0.2247 
+F-statistic: 42.84 on 3 and 430 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<p>Se você quiser <em>plotar</em> modelos de regressão há o pacote <code>{ggeffect}</code>.</p>
 <h2 id="regressão-logística">Regressão Logística</h2>
 <p>Uma <strong>regressão logística se comporta exatamente como um modelo linear</strong>: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes, mais uma constante. Porém ao invés de retornar um valor contínuo, como a regressão linear, retorna a função logística desse valor.</p>
 <p><span class="math display">\[\operatorname{Logística}(x) = \frac{1}{1 + e^{(-x)}}\]</span></p>
@@ -2536,6 +2626,66 @@ Figure 4: Função Logística
 <li><code>association</code>: <em>dummy</em> se os membros da casa do respondente fazem parte de alguma organização da comunidade</li>
 <li><code>educ</code>: quantidade de anos de educação que o chefe da família respondente possui</li>
 </ul>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>wells</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/wells.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"iddii"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>wells1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/glm.html'>glm</a></span><span class='op'>(</span><span class='va'>switch</span> <span class='op'>~</span> <span class='va'>arsenic</span> <span class='op'>+</span> <span class='va'>dist</span> <span class='op'>+</span> <span class='va'>educ</span> <span class='op'>+</span> <span class='va'>assoc</span>,
+              data <span class='op'>=</span> <span class='va'>wells</span>,
+              family <span class='op'>=</span> <span class='va'>binomial</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>
+Call:
+glm(formula = switch ~ arsenic + dist + educ + assoc, family = binomial, 
+    data = wells)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.5942  -1.1976   0.7541   1.0632   1.6739  
+
+Coefficients:
+             Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) -0.156712   0.099601  -1.573    0.116    
+arsenic      0.467022   0.041602  11.226  &lt; 2e-16 ***
+dist        -0.008961   0.001046  -8.569  &lt; 2e-16 ***
+educ         0.042447   0.009588   4.427 9.55e-06 ***
+assoc       -0.124300   0.076966  -1.615    0.106    
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 4118.1  on 3019  degrees of freedom
+Residual deviance: 3907.8  on 3015  degrees of freedom
+AIC: 3917.8
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+<p>Vamos pegar o <code>exp()</code> dos coeficientes:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>$</span><span class='va'>coefficients</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>(Intercept)     arsenic        dist        educ       assoc 
+  0.8549505   1.5952358   0.9910789   1.0433604   0.8831149 </code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='va'>wells</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>arsenic</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+<p><img src="5-Regressao_files/figure-html5/arsenic-1.png" width="624" /></p>
+</div>
 <h2 id="regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</h2>
 <p>Uma regressão de Poisson se comporta exatamente como um modelo linear: faz uma predição simplesmente computando uma soma ponderada das variáveis independentes <span class="math inline">\(\mathbf{X}\)</span> pelos coeficientes estimados <span class="math inline">\(\boldsymbol{\beta}\)</span>, mais uma constante <span class="math inline">\(\alpha\)</span>. Porém ao invés de retornar um valor contínuo <span class="math inline">\(y\)</span>, como a regressão linear, retorna o logarítmo natural desse valor <span class="math inline">\(\log(y)\)</span>.</p>
 <p><span class="math display">\[
@@ -2583,6 +2733,106 @@ Figure 5: Função Exponencial
 <li><code>senior</code>: <em>dummy</em> para indicar se há apenas idosos no apartamento</li>
 <li><code>exposure2</code>: número de dias que as armadilhas de baratas foram usadas</li>
 </ul>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>roaches</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/roaches.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"idiid"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>roaches1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/glm.html'>glm</a></span><span class='op'>(</span>
+  <span class='va'>y</span> <span class='op'>~</span> <span class='va'>roach1</span> <span class='op'>+</span> <span class='va'>treatment</span> <span class='op'>+</span> <span class='va'>senior</span> <span class='op'>+</span> <span class='va'>exposure2</span>,
+  data <span class='op'>=</span> <span class='va'>roaches</span>,
+  family <span class='op'>=</span> <span class='va'>poisson</span>
+<span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>
+Call:
+glm(formula = y ~ roach1 + treatment + senior + exposure2, family = poisson, 
+    data = roaches)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-18.353   -5.285   -4.178    0.290   27.674  
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  2.967e+00  4.339e-02  68.377  &lt; 2e-16 ***
+roach1       6.525e-03  9.015e-05  72.380  &lt; 2e-16 ***
+treatment   -5.149e-01  2.468e-02 -20.862  &lt; 2e-16 ***
+senior      -3.788e-01  3.356e-02 -11.288  &lt; 2e-16 ***
+exposure2    1.620e-01  3.623e-02   4.473  7.7e-06 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 16475  on 261  degrees of freedom
+Residual deviance: 11431  on 257  degrees of freedom
+AIC: 12195
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<p>Vamos pegar o <code>exp()</code> dos coeficientes:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>$</span><span class='va'>coefficients</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>(Intercept)      roach1   treatment      senior   exposure2 
+ 19.4257454   1.0065465   0.5975770   0.6847095   1.1759141 </code></pre>
+</div>
+<h2 id="como-plotar-modelos-com-o-ggeffects">Como <em>plotar</em> modelos com o <code>{ggeffects}</code></h2>
+<p>Podemos usar o pacote [<code>{ggeffects}](https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html) para *plotar* objetos</code>lm<code>e</code>glm`</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://strengejacke.github.io/ggeffects/'>ggeffects</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>kidiq_3</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>$mom_iq</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-lm-1.png" width="624" /></p>
+<pre><code>
+$mom_hs</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-lm-2.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>$arsenic</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-logit-1.png" width="624" /></p>
+<pre><code>
+$dist</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-logit-2.png" width="624" /></p>
+<pre><code>
+$educ</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-logit-3.png" width="624" /></p>
+<pre><code>
+$assoc</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-logit-4.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+<pre><code>$roach1</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-poisson-1.png" width="624" /></p>
+<pre><code>
+$treatment</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-poisson-2.png" width="624" /></p>
+<pre><code>
+$senior</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-poisson-3.png" width="624" /></p>
+<pre><code>
+$exposure2</code></pre>
+<p><img src="5-Regressao_files/figure-html5/ggeffects-glm-poisson-4.png" width="624" /></p>
+</div>
 <h2 id="ambiente">Ambiente</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -2610,29 +2860,36 @@ attached base packages:
 [7] base     
 
 other attached packages:
-[1] broom_0.7.5     patchwork_1.1.1 dplyr_1.0.5     ggplot2_3.3.3  
+[1] ggeffects_1.0.2 readr_1.4.0     broom_0.7.5     patchwork_1.1.1
+[5] dplyr_1.0.5     ggplot2_3.3.3  
 
 loaded via a namespace (and not attached):
- [1] bslib_0.2.4       compiler_4.0.3    pillar_1.5.1     
- [4] jquerylib_0.1.3   highr_0.8         tools_4.0.3      
- [7] digest_0.6.27     downlit_0.2.1     lattice_0.20-41  
-[10] nlme_3.1-149      jsonlite_1.7.2    evaluate_0.14    
-[13] lifecycle_1.0.0   tibble_3.1.0      gtable_0.3.0     
-[16] mgcv_1.8-33       pkgconfig_2.0.3   png_0.1-7        
-[19] rlang_0.4.10      Matrix_1.2-18     DBI_1.1.1        
-[22] distill_1.2       yaml_2.2.1        xfun_0.22        
-[25] withr_2.4.1       stringr_1.4.0     knitr_1.31       
-[28] generics_0.1.0    vctrs_0.3.7       sass_0.3.1       
-[31] tidyselect_1.1.0  grid_4.0.3        glue_1.4.2       
-[34] R6_2.5.0          fansi_0.4.2       rmarkdown_2.7    
-[37] tidyr_1.1.3       farver_2.1.0      purrr_0.3.4      
-[40] magrittr_2.0.1    backports_1.2.1   splines_4.0.3    
-[43] scales_1.1.1      htmltools_0.5.1.1 ellipsis_0.3.1   
-[46] assertthat_0.2.1  colorspace_2.0-0  labeling_0.4.2   
-[49] utf8_1.2.1        stringi_1.5.3     munsell_0.5.0    
-[52] crayon_1.4.1     </code></pre>
+ [1] Rcpp_1.0.6        lattice_0.20-41   tidyr_1.1.3      
+ [4] png_0.1-7         assertthat_0.2.1  digest_0.6.27    
+ [7] utf8_1.2.1        R6_2.5.0          backports_1.2.1  
+[10] survey_4.0        evaluate_0.14     highr_0.8        
+[13] pillar_1.5.1      rlang_0.4.10      minqa_1.2.4      
+[16] jquerylib_0.1.3   nloptr_1.2.2.2    Matrix_1.2-18    
+[19] rmarkdown_2.7     labeling_0.4.2    splines_4.0.3    
+[22] lme4_1.1-26       statmod_1.4.35    stringr_1.4.0    
+[25] munsell_0.5.0     compiler_4.0.3    xfun_0.22        
+[28] pkgconfig_2.0.3   mgcv_1.8-33       mitools_2.4      
+[31] htmltools_0.5.1.1 nnet_7.3-14       downlit_0.2.1    
+[34] insight_0.13.2    tidyselect_1.1.0  tibble_3.1.0     
+[37] fansi_0.4.2       crayon_1.4.1      withr_2.4.1      
+[40] MASS_7.3-53       grid_4.0.3        nlme_3.1-149     
+[43] jsonlite_1.7.2    gtable_0.3.0      lifecycle_1.0.0  
+[46] DBI_1.1.1         magrittr_2.0.1    scales_1.1.1     
+[49] estimability_1.3  stringi_1.5.3     carData_3.0-4    
+[52] farver_2.1.0      snakecase_0.11.0  bslib_0.2.4      
+[55] ellipsis_0.3.1    effects_4.2-0     generics_0.1.0   
+[58] vctrs_0.3.7       boot_1.3-25       distill_1.2      
+[61] sjlabelled_1.1.7  tools_4.0.3       glue_1.4.2       
+[64] purrr_0.3.4       hms_1.0.0         survival_3.2-7   
+[67] yaml_2.2.1        colorspace_2.0-0  knitr_1.31       
+[70] sass_0.3.1       </code></pre>
 </div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
