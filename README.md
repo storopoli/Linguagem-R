@@ -58,9 +58,9 @@ Para configurar um ambiente local:
 
 ## Aulas
 
--   [**Aula 1 - O que é
+-   [**Aula 1 — O que é
     R?**](https://storopoli.io/Linguagem-R/1-O_que_e_R.html): Tipos de
-    Varíaveis, Estrutura de Dados, RStudio e Rmarkdown.
+    Variáveis, Estrutura de Dados, RStudio e Rmarkdown.
 -   [**Aulas 2 e 3 — Manipulação de
     Dados**](https://storopoli.io/Linguagem-R/2-Manipulacao_Dados.html):
     `dplyr`, `readr`, `tidyr` e `stringr`.
