@@ -19,8 +19,6 @@ navbar:
       href: 3-Visualizacao_Dados.html
     - text: "4. Programação Funcional"
       href: 4-Programacao_Funcional.html
-    - text: "5. Regressão Linear e Regressão Logística"
-      href: 5-Regressao.html
   right:
     - icon: ai ai-google-scholar ai-lg
       href: https://scholar.google.com/citations?user=xGU7H1QAAAAJ&hl=en

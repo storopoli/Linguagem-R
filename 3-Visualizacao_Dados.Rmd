@@ -41,21 +41,16 @@ Cada gráfico `{ggplot2}` tem três componentes principais:
 ```{r ggplot-data}
 library(ggplot2) # `require(ggplot2)` também serve 99.99% usam `library()`
 library(dplyr)
-mpg %>% # igual a isso `ggplot(data = mpg)`
-  ggplot()
+
 ```
 
 ```{r ggplot-aes}
-mpg %>% 
-  ggplot(aes(hwy, cty))
+
 ```
 
 
 ```{r ggplot-geom}
-mpg %>% 
-  ggplot(aes(hwy, cty)) + 
-  geom_point() +
-  geom_smooth(method = "lm")
+
 ```
 
 > OBS: Porque `+` e não o *pipe* `%>%`?
@@ -66,11 +61,7 @@ mpg %>%
 
 ```{r plotly}
 library(plotly)
-p <- mpg %>% 
-  ggplot(aes(hwy, cty)) + 
-  geom_point() +
-  geom_smooth(method = "lm")
-ggplotly(p)
+
 ```
 
 
@@ -81,68 +72,48 @@ Temos vários! VÁRIOS! Vou mostrar alguns mais comuns:
 * [`geom_point()`](https://ggplot2.tidyverse.org/reference/geom_point.html): gráficos de dispersão.
 
 ```{r geom-point}
-mpg %>% 
-  ggplot(aes(cyl)) +
-  geom_point(aes(y = hwy), shape = 3, color = "steelblue") +
-  geom_point(aes(y = cty), shape = 1, color = "red")
+
 ```
 
 
 * [`geom_smooth()`](https://ggplot2.tidyverse.org/reference/geom_smooth.html): ajusta uma linha de tendêndia (suavizada ou linear) aos dados e a exibe junto com o seu erro padrão. Muitas vezes usado em conjunto com o `geom_point()`.
 
 ```{r geom-smooth}
-ggplot(mpg, aes(displ, hwy, colour = class)) + 
-  geom_point() +
-  geom_smooth(method = "lm")
+
 ```
 
 * [`geom_boxplot()`](https://ggplot2.tidyverse.org/reference/geom_boxplot.html): diagrama de caixa, o queridinho dos estatísticos (idealizado por John Tukey).
 
 ```{r geom-boxplot}
-mpg %>% 
-  ggplot(aes(class, hwy, colour = class)) +
-  geom_boxplot()
+
 ```
 
 * [`geom_histogram()`](https://ggplot2.tidyverse.org/reference/geom_histogram.html) e [`geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html): distribuição de variáveis contínuas, intervalares ou ordinais.
 
 ```{r geom-histogram}
-mpg %>% 
-  ggplot(aes(hwy)) +
-  geom_histogram(bins = 30)
+
 ```
 
 ```{r geom-density}
-mpg %>% 
-  ggplot(aes(hwy)) +
-  geom_density(fill = "steelblue")
+
 ```
 
 * [`geom_bar()`](https://ggplot2.tidyverse.org/reference/geom_bar.html): distribuição de variáveis discretas, qualitativas, categóricas ou nominais. `geom_bar()` por padrão conta a frequência das ocorrências mas você pode usar qualquer outra maneira de contagem com o [`geom_col()`](https://ggplot2.tidyverse.org/reference/geom_bar.html).
 
 ```{r geom-bar}
-mpg %>% 
-  ggplot(aes(class)) +
-  geom_bar()
+
 ```
 
 ```{r geom-col}
 library(forcats)
-mpg %>% 
-  count(class) %>% 
-  mutate(class = as.factor(class),
-         class = fct_reorder(class, n, .desc = TRUE)) %>% 
-  ggplot(aes(class, n)) +
-  geom_col()
+
 ```
 
 
 * [`geom_line()`](https://ggplot2.tidyverse.org/reference/geom_path.html): desenha linhas entre as observacões. Muito "abusado". Tentem usar apenas para séries temporais #ficaadica.
 
 ```{r geom-line}
-economics %>% 
-  ggplot(aes(date, unemploy)) +
-  geom_line()
+
 ```
 
 ## Estéticas com `aes()`
@@ -152,33 +123,25 @@ Além de `x` e `y` temos outros atributos como:
 * `colour`: cores (cuidado pois as vezes pessoas confundem com `fill`)
 
 ```{r aes-colour}
-mpg %>% 
-  ggplot(aes(cyl, hwy, colour = class)) +
-  geom_point()
+
 ```
 
 * `fill`: preenchimento
 
 ```{r aes-fill}
-mpg %>% 
-  ggplot(aes(class, fill = manufacturer)) +
-  geom_bar()
+
 ```
 
 * `shape`: forma
 
 ```{r aes-shape}
-mpg %>% 
-  ggplot(aes(cyl, cty, shape = class)) +
-  geom_point()
+
 ```
 
 * `size`: tamanho
 
 ```{r aes-size}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point()
+
 ```
 
 ### Atributos dentro e fora do `aes()`
@@ -186,15 +149,11 @@ mpg %>%
 Vejam abaixo o que vai acontecer!
 
 ```{r aes-dentro}
-mpg %>% 
-  ggplot() +
-  geom_point(aes(displ, hwy, colour =  "steelblue"))
+
 ```
 
 ```{r aes-fora}
-mpg %>% 
-  ggplot() +
-  geom_point(aes(hwy, displ), color = "steelblue", size = 5)
+
 ```
 
 ## Rótulos com `labs()`
@@ -210,33 +169,11 @@ Teoricamente você precisa somente de `ggplot(aes(... )) + geom_*()`. Mas à vez
 * `caption`: "rubrica"
 
 ```{r ggplot-labs}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  labs(
-    title = "Um gráfico bonito",
-    subtitle = "... é aquele que tem subtítulos",
-    caption = " ... juntamente com \"rubricas\"",
-    x = "Deslocamento Volumétrico",
-    y = "Autonomia em Milhas por Galão",
-    colour = "Tipo de Carro",
-    size = "QTD Cilindros"
-  )
+
 ```
 
 ```{r labs-NULL}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  labs(
-    title = NULL,
-    subtitle = NULL,
-    caption = NULL,
-    x = NULL,
-    y = NULL,
-    colour = NULL,
-    size = NULL
-  )
+
 ```
 
 
@@ -247,10 +184,7 @@ Outra técnica para exibir variáveis categóricas adicionais em um gráfico é 
 Para facetar um gráfico, você simplesmente adiciona uma especificação de facetamento com [`facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html), que leva o nome de uma variável precedida por `~`.
 
 ```{r facet-wrap}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  facet_wrap(~class)
+
 ```
 
 `facet_wrap()` tem alguns argumentos interessentes:
@@ -260,24 +194,13 @@ mpg %>%
 * `labeller` controla o "subtítulo" da "faceta"
 
 ```{r facet-wrap-arguments}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  facet_wrap(~class,
-             ncol = 2,               # mutuamente exclusivo de `nrow`
-             scales = "free",        # cada faceta tem seu eixo x e y
-             labeller = "label_both" # traz o label da "facet" junto com o valor das classes da faceta
-             )
+
 ```
 
 Você pode colocar mais `facets`. Quando você tem mais variáveis o `labeller = "label_value"` funciona muito bem.
 
 ```{r facet-wrap-multi}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  facet_wrap(~class + cyl,
-             labeller = "label_both")
+
 ```
 
 ## Customização de Temas com `theme()`
@@ -287,18 +210,7 @@ O sistema de temas é composto por quatro componentes principais:
 * Os **elementos** do tema especificam os elementos que não são de dados que você pode controlar. Por exemplo, o elemento `plot.title` controla a aparência do título do gráfico; `axis.ticks.x`, os ticks no eixo x; `legend.key.height`, a altura das chaves na legenda.
 
 ```{r theme-element}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  labs(title = "Algum título que eu vou querer em Comic Sans") +
-  facet_wrap(~class + cyl,
-             labeller = "label_both") +
-  theme(text = element_text(size = 8),
-        plot.title = element_text(family = "Comic Sans MS"),
-        axis.ticks.x = element_line(colour = "purple",
-                                    arrow = arrow(
-                                      length = unit(
-                                        1, "mm"))))
+
 ```
 
 
@@ -308,10 +220,7 @@ mpg %>%
 - [**Temas**](https://ggplot2.tidyverse.org/reference/ggtheme.html) completos, como `theme_grey()`, para definir todos os elementos do tema para valores projetados para trabalhar de maneira harmônica.
 
 ```{r custom-themes}
-mpg %>% 
-  ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point() +
-  theme_classic() # gosto bastante
+
 ```
 
 ## Escalas com o `scale_*_*()`
@@ -321,39 +230,27 @@ As escalas controlam os detalhes de como os valores dos dados são convertidos e
 * [`scale_y_log10()`](https://ggplot2.tidyverse.org/reference/scale_continuous.html): põe o eixo `y` numa escala logarítima (parece que isso tá na moda com o COVID).
 
 ```{r scale_y_log10}
-economics %>% 
-  ggplot(aes(date, unemploy)) +
-  geom_line() +
-  scale_y_log10()
+
 ```
 
 * [`scale_fill_brewer()` e `scale_colour_brewer()`](https://ggplot2.tidyverse.org/reference/scale_brewer.html): usa as escalas de cores do [Color Brewer 2.0](https://colorbrewer2.org/).
 
 ```{r scale_colour_brewer}
-mpg %>% 
-ggplot(aes(displ, hwy, colour = class)) + 
-  geom_point(alpha = 0.5) +
-  scale_color_brewer(palette = "Set1")
+
 
 ```
 
 * [`scale_fill_viridis_c()` e `scale_colour_viridis_c()`](https://ggplot2.tidyverse.org/reference/scale_viridis.html): usa as escalas de cores *opensource* do [`Matplotlib`](https://bids.github.io/colormap/)
 
 ```{r scale_fill_viridis_c}
-mpg %>% 
-ggplot(aes(displ, hwy, colour = as.factor(cyl))) + 
-  geom_point() +
-  scale_colour_viridis_d(option = "E") # cividis que é inclusivo de quem tem "dificuldades" de cores
+
 ```
 
 
 Vamos arrumar o gráfico anterior:
 
 ```{r scale_size}
-mpg %>% 
-ggplot(aes(displ, hwy, colour = class, size = cyl)) + 
-  geom_point(alpha = 0.5) +
-  scale_size(range = c(1, 3))
+
 ```
 
 
@@ -364,11 +261,7 @@ O pacote [`{scales}`](https://scales.r-lib.org/) fornece a infraestrutura de esc
 * [`label_percent()`](https://scales.r-lib.org/reference/label_percent.html): converte os rótulos de um eixo para percentuais.
 
 ```{r label_percent}
-economics %>%
-  ggplot(aes(date, unemploy / pop)) +
-  geom_line() +
-  scale_y_continuous(labels = scales::label_percent(accuracy = 0.01, decimal.mark = ",")) +
-  labs(y = "% de Desempregados da Pop Total")
+
 ```
 
 
@@ -377,14 +270,7 @@ economics %>%
 * [`label_dollar()`](https://scales.r-lib.org/reference/label_dollar.html): converte os rótulos de um eixo para valores de moeda (U\$, R\$ etc.)
 
 ```{r label_dollar}
-economics %>% 
-  ggplot(aes(date, pce)) +
-  geom_line() +
-  scale_y_continuous(
-    labels = scales::label_dollar(prefix = "R$ ",
-                                  suffix = " bi",
-                                  decimal.mark = ".")
-  )
+
 ```
 
 ## "Como é que salva?" `ggsave()`
@@ -399,16 +285,7 @@ O pacote [`{patchwork}`](https://patchwork.data-imaginist.com/index.html) tem co
 
 ```{r patchwork}
 library(patchwork)
-p1 <- ggplot(mtcars) + geom_point(aes(mpg, disp))
-p2 <- ggplot(mtcars) + geom_boxplot(aes(gear, disp, group = gear))
-p3 <- ggplot(mtcars) + geom_smooth(aes(disp, qsec))
-p4 <- ggplot(mtcars) + geom_bar(aes(carb))
 
-(p1 | p2 | p4) / p3 +
-  plot_annotation(title = "Quatro gráficos legais",
-                  tag_levels = "I", tag_prefix = "Fig. ") +
-  plot_layout(nrow = 2, widths = c(1, 3),
-              heights = c(2, 1))
 ```
 
 ## *Free Samples*
@@ -419,67 +296,40 @@ Vocês já sabem tudo o que é necessário para fazerem visualizações perfeita
 
 ```{r ggrepel}
 library(ggrepel)
-ggplot(mtcars, aes(wt, mpg, label = rownames(mtcars))) +
-  geom_label_repel() +
-  geom_point(color = 'red') +
-  theme_classic(base_size = 12)
+
 ```
 Dá para fazer uma gambiarra
 
 ```{r ggrepel-gambiarra}
 library(stringr)
-ggplot(mtcars, aes(wt, mpg, label = if_else(str_detect(rownames(mtcars), "Merc"), rownames(mtcars), NA_character_))) +
-  geom_text_repel() +
-  geom_point(color = 'red') +
-  theme_classic(base_size = 12)
+
 ```
 
 
 * [`{gghighlight}`](https://yutannihilation.github.io/gghighlight/articles/gghighlight.html): destacar geoms no `{ggplot2}`.
 
 ```{r gghighlight}
-set.seed(2)
-d <- purrr::map_dfr(
-  letters,
-  ~ tibble::tibble(
-      idx = 1:400,
-      value = cumsum(runif(400, -1, 1)),
-      type = .,
-      flag = sample(c(TRUE, FALSE), size = 400, replace = TRUE)
-    )
-)
-d %>%
-  ggplot(aes(idx, value, colour = type)) +
-  geom_line()
+
 ```
 
 Eu posso filtrar?
 
 ```{r gghighlight-2}
-d %>%
-  filter(type %in% c("g", "s")) %>% 
-  ggplot(aes(idx, value, colour = type)) +
-  geom_line()
+
 ```
 
 A solução é usar o `{gghighlight}`:
 
 ```{r gghighlight-3}
 library(gghighlight)
-d %>%
-  ggplot(aes(idx, value, colour = type)) +
-  geom_line() +
-  gghighlight(max(abs(value)) >= 20)
+
 ```
 
 * [`{ggExtra}`](https://github.com/daattali/ggExtra): histogramas marginais em gráficos de dispersão.
 
 ```{r ggExtra}
 library(ggExtra)
-plot <- mpg %>% 
-  ggplot(aes(hwy, cty)) +
-  geom_point(colour = "steelblue") 
-ggMarginal(plot)
+
 
 ```
 
@@ -487,11 +337,7 @@ ggMarginal(plot)
 
 ```{r ggridges}
 library(ggridges)
-diamonds %>% 
-  ggplot(aes(price, cut, fill = as.factor(cut))) +
-  geom_density_ridges() +
-  scale_x_continuous(labels = scales::label_dollar()) +
-  scale_fill_brewer(palette = "Set1")
+
 ```
 
 ## Ambiente

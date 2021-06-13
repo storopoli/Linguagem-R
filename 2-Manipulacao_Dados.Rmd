@@ -37,14 +37,6 @@ knitr::include_graphics("images/tidydata_1.jpg")
 
 ```{r magrittr}
 library(magrittr)
-
-# atalho é CTRL + SHIFT + M
-
-c(0:10, NA) %>%
-  mean(na.rm = TRUE) %>% 
-  print() %>% 
-  message() %>% 
-  message()
 ```
 
 ## Como ler dados com o `{readr}`
@@ -70,20 +62,15 @@ Se vocês quiserem ler arquivos `.xlsx` ou `.xls` usem o pacote [`{readxl}`](htt
 
 ```{r readr-adult}
 library(readr)
-adult <- read_csv("datasets/adult.csv",
-                  col_types = "_iffifffif")
+
 ```
 
 ```{r readr-countries_of_the_world}
-countries <- read_csv("datasets/countries_of_the_world.csv", 
-    col_types = cols(Population = col_integer(), 
-        `Net migration` = col_double()), 
-    locale = locale(decimal_mark = ","))
+
 ```
 
 ```{r readr-covid}
-covid <- read_csv("datasets/covid_19_data.csv", 
-    col_types = cols(SNo = col_skip(), ObservationDate = col_date(format = "%m/%d/%Y")))
+
 ```
 
 ## Manipulação de dados com o [`{dplyr}`](https://dplyr.tidyverse.org/)
@@ -96,28 +83,17 @@ knitr::include_graphics("images/dplyr_wrangling.png")
 
 ```{r dplyr-select}
 library(dplyr)
-adult_clean <- adult %>% 
-  select(age, workclass, education,
-         education_num = `educational-num`,
-         marital_status = `marital-status`,
-         race, gender,
-         hours_per_week = `hours-per-week`,
-         income)
+
 ```
 
 > OBS: Tem a função `rename_with` do `{dplyr}` versão 1.0. 
 
 ```{r dplyr-rename_with}
-adult %>% 
-  rename_with(~gsub("-", "_", .x))
+
 ```
 
 ```{r mais-select}
-adult %>% 
-  rename_with(~gsub("-", "_", .x)) %>% 
-  select(where(is.factor)) %>% 
-  select(-workclass) %>% 
-  rename_all(~paste0("antigo_", .x))
+
 ```
 
 > Professor eu gosto de camelCase e agora?
@@ -126,15 +102,13 @@ Não tema, tem o pacote [`{janitor}`](https://garthtarr.github.io/meatR/janitor.
 
 ```{r janitor}
 library(janitor)
-adult %>% clean_names(case = "lower_camel")
+
 ```
 
 #### Ordenar variáveis com `dplyr::arrange()`
 
 ```{r adult-arrange}
-adult_clean %>% 
-  arrange(-age, education_num) %>% 
-  select(age, education_num)
+
 ```
 
 #### Frequencias com `dplyr::count()`
@@ -142,8 +116,7 @@ adult_clean %>%
 > OBS: vamos ver muito essa função quando falarmos de `group_by()`
 
 ```{r adult-count}
-adult_clean %>% 
-  count(age, income, sort = TRUE)
+
 ```
 
 ### Manipular Variáveis -- `dplyr::mutate()`
@@ -154,69 +127,32 @@ use `options(scipen = 999, digits = 2)`
 
 ```{r dplyr-mutate}
 options(scipen = 999, digits = 2)
-countries <- countries %>% clean_names()
 
-countries %>% 
-  mutate(
-    log_pop = log(population),
-    area_sq_km = area_sq_mi * 2.5899985,
-    pop_density_per_sq_km = population / area_sq_km)
 ```
 
 O mutate ele altera variáveis *in-place* ou adiciona novas variáveis preservando as existentes. Mas temos também o `transmute` adiciona novas variáveis e *dropa* todas as demais.
 
 ```{r dplyr-transmute}
-countries %>% 
-  transmute(
-    log_pop = log(population),
-    area_sq_km = area_sq_mi * 2.5899985,
-    pop_density_per_sq_km = population / area_sq_km)
+
 ```
 
 Quase todos os verbos (como vocês viram lá em cima) do `{dplyr}` tem os sufixos `_if`, `_all` e `_at`. Por exemplo:
 
 ```{r dplyr-mutate_all}
-covid %>% 
-  mutate_if(is.character, as.factor)
+
 ```
 #### `dplyr::if_else` e `dplyr::case_when`
 
 Usamos o `if_else` quando queremos fazer um teste booleano e gerar um valor caso o teste seja verdadeiro e outro valor caso o teste seja falso. Basicamente um `if ... else ...`:
 
 ```{r adult-if_else}
-adult_clean %>% 
-  mutate(
-    race_black = if_else(race == "Black", 1L, 0L)
-  ) %>% 
-  select(starts_with("race"))
+
 ```
 
 Temos algo um pouco mais flexível, poderoso; porém verboso. Esse é o `dplyr::case_when`:
 
 ```{r adult-case_when}
-adult_cat <- adult_clean %>% 
-  mutate(
-    marital_status_cat = case_when(
-      marital_status == "Never-married" ~ 1L,
-      marital_status == "Married-civ-spouse" ~ 2L,
-      marital_status == "Married-spouse-absent" ~ 3L,
-      marital_status == "Married-AF-spouse " ~ 4L,
-      marital_status == "Separated" ~ 5L,
-      marital_status == "Divorced" ~ 6L,
-      marital_status == "Widowed" ~ 7L,
-      TRUE ~ NA_integer_
-    ),
-    marital_age_group = case_when(
-      marital_status_cat == 1 & age >=30 ~ "solteirx_convictx",
-      marital_status_cat == 1 & age <=30 ~ "solteirx_jovem",
-      marital_status_cat > 1 & marital_status_cat <= 4 & age >=30 ~ "adultos_casados",
-      marital_status_cat > 1 & marital_status_cat <= 4 & age <=30 ~ "jovens_casados",
-      TRUE ~ "divorciados, separados etc"
-    )
-  ) 
-  adult_cat %>% 
-    select(starts_with("marital")) %>%
-    count(marital_age_group, sort = TRUE)
+
 ```
 
 ### Agrupar e Sumarizar Variáveis -- `dplyr::group_by()` e `dplyr::summarise()`
@@ -224,51 +160,30 @@ adult_cat <- adult_clean %>%
 Agrupamos dados com o `dplyr::group_by()` e depois usamos o `dplyr::summarise()` (também existe na versão inglês *americano* como dplyr::summarize()`) para computar valores dos grupos. Este tipo de análise é chamada comumente de *split-apply-combine*.
 
 ```{r adult-group_by}
-adult_cat %>% 
-  group_by(marital_age_group) %>% 
-  summarise(
-    n = n(),
-    n_prop = n / nrow(.)) %>% 
-  arrange(-n)
+
 ```
 
 ```{r covid-group_by}
-covid %>% 
-  janitor::clean_names() %>% 
-  group_by(country_region) %>% 
-  summarise(
-    n = n(),
-    media_confirmados = mean(confirmed),
-    mediana_confirmados = median(confirmed),
-    media_mortos = mean(deaths),
-    mediana_mortos = median(deaths)
-  ) %>% 
-  arrange(-mediana_mortos)
+
 ```
 
 Eu posso agrupar por vários grupos por exemplo:
 
 ```{r covid-group_by-multiple}
 library(tidyr)
-covid %>% 
-  janitor::clean_names() %>% 
-  group_by(country_region, province_state) %>% 
-  drop_na() %>% 
-  count(wt = deaths, sort = TRUE)
+
 ```
 
 Lembra que todos os verbos do `{dplyr}` tem o sufixo `_all`, `_if` e `_at`?
 
 ```{r dplyr-summarise_if}
-covid %>% 
-  summarise_if(is.numeric, median)
+
 ```
 
 Não sei o futuro das coisas `_if`, `_at` e `_all`, pois o *lifecycle* está em *superseded*. Então se vocês quiserem um código robusto ao tempo usem o `across`:
 
 ```{r dplyr-across}
-covid %>% 
-  summarise(across(where(is.numeric), ~median(.x, na.rm = TRUE)))
+
 ```
 
 > Qual a diferença de `grouped_df` e `tibble`?
@@ -276,21 +191,11 @@ covid %>%
 Se você estiver no mundo do `{tidyverse}` nenhuma, mas se você for dar um pipe `%>%` de um `grouped_df` em algo que não é do `{tidyverse}` e que somente aceita `tibbles` e `data.frames` você vai receber um erro. Nesses casos antes de "pipar" `%>%` você faz um `ungroup()`:
 
 ```{r ex-ungroup}
-adult_clean %>% 
-  group_by(gender) %>% 
-  class() %>% 
-  print
 
-adult_clean %>% 
-  group_by(gender) %>% 
-  ungroup() %>% # <----- "desgrupando"
-  class() %>% 
-  print
 ```
 
 ```{r limpeza-total}
-covid <- covid %>% janitor::clean_names()
-countries <- countries %>% janitor::clean_names()
+
 ```
 
 
@@ -307,34 +212,20 @@ Vamos para a cereja do bolo que é os famosos joins. `{dplyr}` tem os seguintes 
 
 ```{r join-covid-countries}
 library(stringr)
-# antes de fazer o join vamos ver se vai dar certo
-227 - sum(countries$country %in% covid$country_region)
+
 ```
 
 ```{r covid-china}
-covid %>%
-  count(country_region, wt = confirmed, sort = TRUE) %>% 
-  filter(str_detect(country_region, "China"))
+
 ```
 
 ```{r countries-china}
-countries %>%
-  filter(str_detect(country, "China"))
+
 ```
 
 ```{r covid-join-plot}
 library(ggplot2)
-covid %>% 
-  mutate(
-    country_region = str_replace(country_region, "Mainland China", "China")
-  ) %>% 
-  filter(observation_date == max(observation_date)) %>% 
-  right_join(countries,
-             by = c("country_region" = "country")) %>% 
-  mutate(deaths_per_capita = deaths / population) %>% 
-  ggplot(aes(x = gdp_per_capita, y = deaths_per_capita)) +
-  geom_point() +
-  geom_smooth(method = lm)
+
   
 ```
 
@@ -353,38 +244,15 @@ Em especial temos as funções `pivot_longer()` e `pivot_wider()`:
 
 ```{r tidyr-relig_income}
 library(tidyr)
-relig_income %>% 
-  pivot_longer(!religion,
-               names_to = "income",
-               values_to = "count") %>% 
-  mutate(across(where(is.character), as.factor)) %>% 
-  filter(!str_detect(income, "Don't know")) %>% 
-  count(religion, income, wt = count, sort = TRUE)
+
 ```
 
 ```{r tidyr-billboard}
-billboard %>% 
-  pivot_longer(
-    cols = starts_with("wk"),
-    names_to = "week",
-    values_to = "rank",
-    values_drop_na = TRUE
-  ) %>% 
-  group_by(artist) %>% 
-  summarise(
-    n = n(),
-    median_rank = median(rank)) %>% 
-  arrange(-n, median_rank)
+
 ```
 
 ```{r tidyr-fish_encounters}
-fish_encounters %>%
-  pivot_wider(
-    names_from = station,
-    values_from = seen,
-    values_fill = 0
-  ) %>% 
-  pivot_longer(!fish, names_to = "station", values_to = "seen")
+
 ```
 
 
@@ -394,26 +262,13 @@ Além do `unnest_wider()` e `unnest_longer()`:
 
 ```{r repurrrsive}
 library(repurrrsive)
-chars <- tibble(char = got_chars)
-chars %>%
-  unnest_wider(char) %>% 
-  select(name, books, tvSeries) %>% 
-  pivot_longer(!name, names_to = "media") %>% 
-  unnest_longer(value) %>% 
-  filter(media == "tvSeries") %>% 
-  extract(value, "season", "(\\d{1})", convert = TRUE)
+
 ```
 
 Uma outra maneira
 
 ```{r tidyr-separate}
-chars %>%
-  unnest_wider(char) %>% 
-  select(name, books, tvSeries) %>% 
-  pivot_longer(!name, names_to = "media") %>% 
-  unnest_longer(value) %>% 
-  filter(media == "tvSeries") %>% 
-  separate(value, into = c(NA, "season"), sep = " ", fill = "right")
+
 ```
 
 ## Extras
@@ -421,25 +276,14 @@ chars %>%
 ### Converter verbos `{dplyr}` em SQL com o [`{dbplyr}`](https://dbplyr.tidyverse.org/)
 
 ```{r dbplyr}
-library(dplyr, warn.conflicts = FALSE)
+library(dbplyr, warn.conflicts = FALSE)
 
-con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-copy_to(con, mtcars)
-
-mtcars2 <- tbl(con, "mtcars")
 ```
 
 Posso muito bem converter verbos `{dplyr}` para `SQL` (para todos os *amantes* de SQL)
 
 ```{r dbplyr-stuff}
-summary <- mtcars2 %>% 
-  group_by(cyl) %>% 
-  summarise(mpg = mean(mpg, na.rm = TRUE)) %>% 
-  arrange(-mpg)
 
-summary %>% show_query()
-
-summary %>% collect()
 ```
 
 

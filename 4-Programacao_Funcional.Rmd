@@ -42,7 +42,7 @@ list %>% map(f)    # ou map(list, f)
 
 ```{r exemplo-rnorm}
 library(purrr)
-1L:10L %>% map(rnorm, 5, 10)
+
 ```
 
 
@@ -58,9 +58,7 @@ Além disso temos o `map2*` (2 listas de inputs) e o `pmap*` (lista de vetores d
 Conversão implícita
 
 ```{r map_dbl}
-1L:10L %>%
-  map(rnorm) %>%
-  map_dbl(mean) # igual a map_dbl(~mean(.x))
+
 ```
 
 ## Professor, e a `~`?
@@ -68,17 +66,12 @@ Conversão implícita
 O tio `~` (em inglês é tilde) ele funciona quando você precisa especificar funções e argumentos mais complexos:
 
 ```{r map-tilde}
-c("meu", "microfone", "está", "aberto") %>% # vire um vetor de c("meuprefixo_meu", ...)
-  map_chr(~paste0("meuprefixo_", .x))
+
 ```
 
 ```{r map-ggplot}
 library(ggplot2)
-c("hp", "wt", "qsec") %>% 
-  map(~mtcars %>% 
-        ggplot(aes_string(.x, "mpg")) +
-        geom_point() +
-        geom_smooth())
+
 ```
 
 Agora é um bom momento para introduzir o `purrr::walk`
@@ -86,40 +79,18 @@ Agora é um bom momento para introduzir o `purrr::walk`
 * `walk()` — usado para efeitos colaterais (*side-effects*)
 
 ```{r purrr-walk}
-c("hp", "wt", "qsec") %>% 
-  walk(~ {p <- mtcars %>% 
-        ggplot(aes_string(.x, "mpg")) +
-        geom_point() +
-        geom_smooth()
-      print(p)})
+
 ```
 
 ```{r purrr-walk2}
-y <- c("mpg", "cyl", "gear")
 
-c("hp", "wt", "qsec") %>% 
-  walk2(y, ~{p <- mtcars %>% 
-        ggplot(aes_string(.x, .y)) +
-        geom_point() +
-        geom_smooth()
-      print(p)})
 ```
 
 
 Agora o `purrr::pwalk()`
 
 ```{r purrr-pwalk}
-x <- c("hp", "wt", "qsec")
-y <- c("mpg", "cyl", "gear")
-z <- c("vs", "am", "cyl")
-list_v <- list(x, y, z)
 
-list_v %>% 
-  pwalk(~{p <- mtcars %>% 
-        ggplot(aes_string(..1, ..2, colour = ..3)) + # e continua ..4 ..5 ..6
-        geom_point() +
-        geom_smooth()
-      print(p)})
 ```
 
 Até dá para "knitar" vários markdowns
@@ -150,10 +121,7 @@ Use:
 * `future_walk()`
 
 ```{r purrr-sleep}
-seq_len(8) %>% 
-  walk(~{
-    Sys.sleep(1)
-    print("Oi")})
+
 ```
 
 Agora com o `{furrr}`:
@@ -165,24 +133,18 @@ plan(multisession) # ou coloque no `.Rprofile` `options(Ncpus = parallel::detect
 
 
 ```{r furrr-sleep}
-seq_len(8) %>% 
-  future_walk(~{
-    Sys.sleep(1)
-    print("Oi")},
-    .progress = TRUE)
+
 ```
 
 Se for mexer com coisas aleatórias é importante usar o argumento:
 * `.options = furrr_options(seed = TRUE)`
 
 ```{r furrr-random}
-1L:10L %>% future_map(rnorm)
+
 ```
 
 ```{r furrr-random2}
-1L:10L %>%
-  future_map(rnorm,
-             .options = furrr_options(seed = TRUE))
+
 ```
 
 ## Ambiente

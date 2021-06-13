@@ -32,7 +32,6 @@ Vamos usar todo o universo do [`{tidyverse}`](https://www.tidyverse.org)!
 * Aula 2 e 3 — `dplyr` e manipulação de dados
 * Aula 4 e 5 — `ggplot2` e visualização de dados
 * Aula 6 —  Programação funcional com `purrr` e `furrr`
-* Aula 7 — Regressão Linear e Regressão Logística
 
 ## Professor
 
@@ -45,7 +44,7 @@ R vem da linguagem S que é uma linguagem estatística desenvolvida na Bell Labs
 Rmarkdown é uma boa combinação de gráficos, narrativa e código. Veja o exemplo da figura abaixo.
 
 ```{r ex-plots, echo=FALSE, fig.height=3, fig.width=3, fig.cap='Exemplo de um Plot em R'}
-plot(1:10, 1:10)
+
 ```
 
 ## Tipos de Variáveis do R
@@ -57,11 +56,7 @@ plot(1:10, 1:10)
 * `character`
 
 ```{r, var-types}
-typeof(1L)
-typeof(1.0)
-typeof(TRUE)
-typeof("Oi!")
-is.numeric(1)
+
 ```
 
 ## Estruturas de Dados
@@ -77,44 +72,17 @@ is.numeric(1)
 > OBS: Para designar podemos usar o `x = valor`, mas usamos o `<-` pois não permite equivalência ela assinala tudo que está a direita da flecha para a variável à esquerda da flecha. Ex `x <- valor` (similar ao `x := valor`). Inclusive `alt` + `-` gera um `<-` com um whitespace ao redor.
 
 ```{r vetores}
-vetor_integer <- c(1L, 7L:9L)
-vetor_integer
-typeof(vetor_integer)
-is.numeric(vetor_integer)
 
-vetor_doubles <- c(1, 7:9)
-vetor_doubles
-typeof(vetor_doubles)
-is.numeric(vetor_doubles)
-
-vetor_logical <- c(TRUE, FALSE)
-vetor_logical
-typeof(vetor_logical)
-
-vetor_character <- c("Oi!", "Tchau!")
-vetor_character
-typeof(vetor_character)
 ```
 
 ```{r listas}
-lista_mista <- list("Oi!", TRUE, 1L)
-typeof(lista_mista)
 
-vetor_coerce <- c("Oi!", TRUE, 1L)
-vetor_coerce
-typeof(vetor_coerce)
 ```
 
 > OBS: Named List
 
 ```{r named-list}
-lista_nomeada <- list(
-  "character" = "Oi!",
-  "logical" = TRUE,
-  "integer" = 1L
-)
 
-str(lista_nomeada)
 ```
 
 ### O que podemos fazer com vetores e listas?
@@ -132,58 +100,32 @@ str(lista_nomeada)
   * `lista[1:30]`
 
 ```{r op-lista}
-str(lista_nomeada[1])
-str(lista_nomeada[[1]])
-str(lista_nomeada$logical)
-str(lista_nomeada[["logical"]])
-str(lista_nomeada["character"])
-str(lista_nomeada[1:2])
+
 ```
 
 ### `data.frames` e `tibbles`
 
 ```{r data-frames}
-df <- data.frame(
-  a = sample(c("A", "B"), 100, replace = TRUE),
-  x = runif(100),
-  y = rnorm(100),
-  dia = "hoje"
-)
-df
+
 ```
 
 Para solucionar a facilidade de visualização e inspeção de `data.frame`s o `{tidyverse}` possui uma estrutura de dados chamada `tibble`:
 
 ```{r tibble}
 library(tibble)
-convert_df <- as_tibble(df)
-str(convert_df)
+
 ```
 
 Outra vantagem do `tibble` é que eu consigo criar colunas com base em colunas "passadas". Por exemplo isso dá um erro com a função `data.frame`:
 
 ```{r df-error, eval=FALSE}
-df_error <- data.frame(
-  a = 1:10,
-  b = a + 1
-)
+
 ```
 
 Já no `tibble` eu consigo!
 
 ```{r tibble-megapower}
-tbl <- tibble(
-  a = 1:10,
-  b = a + 1
-)
-tbl_complexa <- tibble(
-  idade_ano = rnorm(100, mean = 30, sd = 10),
-  altura_cm = rnorm(100, mean = 165, sd = 10),
-  peso_kg = rnorm(100, mean = 70, sd = 10),
-  IMC = peso_kg / (altura_cm ^ 2),
-  glicose = rexp(100, rate = IMC / 10)
-)
-tbl_complexa
+
 ```
 
 ## Vetores Especiais -- `factor`
@@ -193,11 +135,7 @@ tbl_complexa
 `factor` é especial pq ele no fundo é um vetor de `integer` sendo que cada `integer` é uma categoria diferentes.
 
 ```{r factor}
-vetor_factor <- factor(c("A", "B", "C"))
-str(vetor_factor)
-typeof(vetor_factor)
-class(vetor_factor)
-unclass(vetor_factor)
+
 ```
 
 ## Valores Especiais

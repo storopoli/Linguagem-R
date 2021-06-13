@@ -51,7 +51,6 @@ Para configurar um ambiente local:
 * [**Aulas 2 e 3 — Manipulação de Dados**](https://storopoli.io/Linguagem-R/2-Manipulacao_Dados.html): `dplyr`, `readr`, `tidyr` e `stringr`.
 * [**Aulas 4 e 5 — Visualização de Dados**](https://storopoli.io/Linguagem-R/3-Visualizacao_Dados.html): `ggplot2`, `scales`, `patchwork`, e mais.
 * [**Aulas 6 —  Programação Funcional**](https://storopoli.io/Linguagem-R/4-Programacao_Funcional.html): `purrr` e `furrr`.
-* [**Aula 7 — Regressão Linear e Regressão Logística**](https://storopoli.io/Linguagem-R/5-Regressao.html): `lm` e `glm`.
 
 
 ## Como citar esse conteúdo
