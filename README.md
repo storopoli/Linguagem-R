@@ -8,7 +8,7 @@ O workshop todo foi gravado e disponibilizado no YouTube na playlist
 abaixo:
 
 [![Ciência de Dados com R e
-tidyverse](images/youtube_pic.png)](https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd)
+tidyverse](https://img.youtube.com/vi/DUkKzhua3X8/maxresdefault.jpg)](https://youtube.com/playlist?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd)
 
 <div class="figure" style="text-align: center">
 

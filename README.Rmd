@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 O workshop todo foi gravado e disponibilizado no YouTube na playlist abaixo:
 
-[![Ciência de Dados com R e tidyverse](images/youtube_pic.png)](https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd)
+[![Ciência de Dados com R e tidyverse](https://img.youtube.com/vi/DUkKzhua3X8/maxresdefault.jpg)](https://youtube.com/playlist?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd)
 
 ```{r code-hero, echo=FALSE, fig.align='center', fig.cap='Linguagem R'}
 knitr::include_graphics("images/code-hero.png")
