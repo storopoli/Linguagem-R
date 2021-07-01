@@ -2355,7 +2355,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2464,38 +2464,35 @@ Figure 1: Programação Funcional
 </code></pre>
 </div>
 <pre><code>[[1]]
-[1] -11.38116
+[1] -1.6
 
 [[2]]
-[1] 13.029668  2.856573
+[1] 5.8 4.3
 
 [[3]]
-[1] 10.758397  5.571244 -4.763009
+[1] -12.3 -22.2   9.5
 
 [[4]]
-[1] 19.659442 -1.472249 17.885089 -2.346908
+[1] -15.2  -5.1  30.9  -5.7
 
 [[5]]
-[1] -1.388816  6.255301 -3.475424 17.935144 -1.549314
+[1] 16.55  5.18 13.63 11.00  0.89
 
 [[6]]
-[1]  14.768663   8.329310   8.465768  24.315147 -12.101316   7.390186
+[1]  15.2  -5.0 -10.1  16.0  20.6  -7.1
 
 [[7]]
-[1]  6.7608059 -6.6035078  0.0735278 11.9206485  2.2138583 -6.9041138
-[7] 14.7165402
+[1] 20.1 21.8  7.4  7.4 14.6  7.5  3.6
 
 [[8]]
-[1]  -4.4990203   8.9216844  -0.6888865  14.2025856  19.5619532
-[6]  25.4041054 -15.4359096   9.6327247
+[1]   3.89   6.48  19.70  -1.79   0.67   3.99 -11.44   8.04
 
 [[9]]
-[1]  20.663960 -15.216816  11.646418  12.675556  11.251517  10.818754
-[7]   2.385407  18.036240  11.447447
+[1] 14.7 15.9 24.0 -4.3 28.1  9.6  4.9  2.0 16.6
 
 [[10]]
- [1] -11.523355  19.664804  -1.211447   2.781161   6.715652   1.754814
- [7]   4.136375 -15.435072  -2.755345  -9.002235</code></pre>
+ [1]  -9.96  -0.41  -0.29  -8.56  -9.73  13.21  -6.07   0.33  27.48
+[10]  27.42</code></pre>
 </div>
 <ul>
 <li><code>map()</code> — sempre retorna uma <code>list</code></li>
@@ -2513,8 +2510,7 @@ Figure 1: Programação Funcional
   <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dbl</a></span><span class='op'>(</span><span class='va'>mean</span><span class='op'>)</span> <span class='co'># igual a map_dbl(~mean(.x))</span>
 </code></pre>
 </div>
-<pre><code> [1] -1.2591202 -0.6455529 -0.8104026  0.1503104 -0.7779383  0.5621727
- [7] -0.2535561  0.6294386 -0.5932808 -0.7587242</code></pre>
+<pre><code> [1]  0.30  0.73 -1.12 -0.42  0.58 -0.12  0.29 -0.17  0.49  0.15</code></pre>
 </div>
 <h2 id="professor-e-a">Professor, e a <code>~</code>?</h2>
 <p>O tio <code>~</code> (em inglês é tilde) ele funciona quando você precisa especificar funções e argumentos mais complexos:</p>
@@ -2665,38 +2661,35 @@ Figure 1: Programação Funcional
 </code></pre>
 </div>
 <pre><code>[[1]]
-[1] 0.814932
+[1] -1.1
 
 [[2]]
-[1] -1.0562436  0.4637372
+[1]  0.34 -2.01
 
 [[3]]
-[1]  1.6050373  0.9370217 -0.6776278
+[1]  0.101 -0.048 -0.260
 
 [[4]]
-[1]  0.7962260  0.7426522 -0.8918861  0.9338568
+[1] -1.0  1.2  1.9 -0.7
 
 [[5]]
-[1] -0.1801842  1.4212317 -0.2833755 -1.4184918  1.0582444
+[1] -0.62  0.34 -0.39 -1.47 -0.11
 
 [[6]]
-[1]  0.3333963  0.4046944 -0.6520585  0.1045224 -0.3571050  0.2808810
+[1]  0.12  0.86  1.38 -0.82  0.59  1.69
 
 [[7]]
-[1] -1.69271644  0.18286852 -0.28538567  0.01724536 -0.96633697
-[6] -0.68696768  1.73231866
+[1] -0.256  0.957 -0.486  3.089 -1.994  0.086  0.581
 
 [[8]]
-[1]  0.2561988 -0.6950161  1.0393150 -0.7689563 -1.3695782  0.1937951
-[7] -0.1522291 -0.5333768
+[1]  0.48  1.16 -0.99 -0.12 -1.11 -1.58  0.52  0.94
 
 [[9]]
-[1]  0.1196148 -0.4576666 -0.7932472 -1.0771695  0.7685329  0.1675055
-[7] -2.0190748  0.1489319  0.6352363
+[1] -1.554  0.152  1.692  0.107 -0.916  0.560  2.328 -0.058 -0.475
 
 [[10]]
- [1]  0.8202823 -1.3235204 -0.2588914  0.7377599  0.2598685  0.2666640
- [7]  1.4020774 -0.3432135 -0.3737338  0.8059877</code></pre>
+ [1]  0.016 -0.362 -0.228 -0.774  1.012  0.665  0.756 -0.043  1.059
+[10]  0.869</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -2706,38 +2699,35 @@ Figure 1: Programação Funcional
 </code></pre>
 </div>
 <pre><code>[[1]]
-[1] -0.1890671
+[1] 0.59
 
 [[2]]
-[1]  0.7072252 -1.7045222
+[1]  0.24 -0.98
 
 [[3]]
-[1] 0.5836392 0.8149874 0.2078733
+[1]  0.231  0.064 -0.299
 
 [[4]]
-[1] -0.9889491 -1.6149687  0.8757440  0.1799311
+[1] 1.168 1.348 0.785 0.063
 
 [[5]]
-[1]  1.1767969 -1.4136739  1.9540730  0.6239741 -0.4595725
+[1]  2.58  0.17  0.11 -1.15  2.70
 
 [[6]]
-[1]  0.9372127 -1.6093423  0.1438658 -0.5614448  1.3289207 -1.4216962
+[1]  0.54 -0.23 -1.07  0.39  0.91  0.11
 
 [[7]]
-[1]  1.83071509  0.20727462 -0.73679714 -0.04572543  1.11853883
-[6] -1.83680047 -0.05900324
+[1]  0.65  1.17 -0.57  1.78  0.20  1.77 -1.42
 
 [[8]]
-[1] -0.5128565 -1.7935135  1.3144587 -1.0019108  0.4888807 -0.9534464
-[7] -0.3804608  1.4291638
+[1]  1.866 -0.843  0.152 -1.764  1.789 -1.026 -1.072 -0.029
 
 [[9]]
-[1] -0.6642156  0.3816342  0.1062315 -0.4831790  1.1260858  0.2976840
-[7]  0.2940084 -0.5980869 -0.4259555
+[1]  0.375  1.118  0.942 -0.639 -0.093 -1.363  0.348  0.641 -0.210
 
 [[10]]
- [1]  0.69178552  0.04851470  0.24116786  1.04415916 -0.10173131
- [6]  0.35009766 -1.22750769  0.09546966 -0.55823563  0.99247543</code></pre>
+ [1]  0.0023  0.0910  0.9352  0.9922  0.8922 -1.7373  1.2078  1.1799
+ [9] -2.1303  1.1040</code></pre>
 </div>
 <h2 id="ambiente">Ambiente</h2>
 <div class="layout-chunk" data-layout="l-body">
@@ -2745,49 +2735,60 @@ Figure 1: Programação Funcional
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
 </code></pre>
 </div>
-<pre><code>R version 4.0.3 (2020-10-10)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 20.04.2 LTS
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Big Sur 11.4
 
 Matrix products: default
-BLAS:   /usr/lib/x86_64-linux-gnu/atlas/libblas.so.3.10.3
-LAPACK: /usr/lib/x86_64-linux-gnu/atlas/liblapack.so.3.10.3
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
 
 locale:
- [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C          
- [3] LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8    
- [5] LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
- [7] LC_PAPER=C.UTF-8       LC_NAME=C             
- [9] LC_ADDRESS=C           LC_TELEPHONE=C        
-[11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods  
 [7] base     
 
 other attached packages:
-[1] furrr_0.2.2   future_1.21.0 ggplot2_3.3.3 purrr_0.3.4  
+ [1] furrr_0.2.3       future_1.21.0     purrr_0.3.4      
+ [4] ggridges_0.5.3    ggExtra_0.9       gghighlight_0.3.2
+ [7] ggrepel_0.9.1     patchwork_1.1.1   forcats_0.5.1    
+[10] plotly_4.9.4.1    repurrrsive_1.0.0 ggplot2_3.3.5    
+[13] stringr_1.4.0     tidyr_1.1.3       janitor_2.1.0    
+[16] dplyr_1.0.7       readr_1.4.0       magrittr_2.0.1   
+[19] tibble_3.1.2     
 
 loaded via a namespace (and not attached):
- [1] tidyselect_1.1.0  xfun_0.22         bslib_0.2.4      
- [4] listenv_0.8.0     splines_4.0.3     lattice_0.20-41  
- [7] colorspace_2.0-0  vctrs_0.3.7       generics_0.1.0   
-[10] htmltools_0.5.1.1 yaml_2.2.1        mgcv_1.8-33      
-[13] utf8_1.2.1        rlang_0.4.10      jquerylib_0.1.3  
-[16] pillar_1.5.1      glue_1.4.2        withr_2.4.1      
-[19] DBI_1.1.1         lifecycle_1.0.0   stringr_1.4.0    
-[22] munsell_0.5.0     gtable_0.3.0      codetools_0.2-16 
-[25] evaluate_0.14     labeling_0.4.2    knitr_1.31       
-[28] parallel_4.0.3    fansi_0.4.2       highr_0.8        
-[31] scales_1.1.1      jsonlite_1.7.2    farver_2.1.0     
-[34] parallelly_1.24.0 distill_1.2       png_0.1-7        
-[37] digest_0.6.27     stringi_1.5.3     dplyr_1.0.5      
-[40] grid_4.0.3        tools_4.0.3       magrittr_2.0.1   
-[43] sass_0.3.1        tibble_3.1.0      crayon_1.4.1     
-[46] pkgconfig_2.0.3   downlit_0.2.1     ellipsis_0.3.1   
-[49] Matrix_1.2-18     assertthat_0.2.1  rmarkdown_2.7    
-[52] R6_2.5.0          globals_0.14.0    nlme_3.1-149     
-[55] compiler_4.0.3   </code></pre>
+ [1] nlme_3.1-152       lubridate_1.7.10   bit64_4.0.5       
+ [4] RColorBrewer_1.1-2 httr_1.4.2         rprojroot_2.0.2   
+ [7] tools_4.1.0        bslib_0.2.5.1      utf8_1.2.1        
+[10] R6_2.5.0           DBI_1.1.1          lazyeval_0.2.2    
+[13] mgcv_1.8-35        colorspace_2.0-2   withr_2.4.2       
+[16] tidyselect_1.1.1   downlit_0.2.1      bit_4.0.4         
+[19] compiler_4.1.0     textshaping_0.3.5  cli_3.0.0         
+[22] labeling_0.4.2     bookdown_0.22      sass_0.4.0        
+[25] scales_1.1.1       systemfonts_1.0.2  digest_0.6.27     
+[28] rmarkdown_2.9      jpeg_0.1-8.1       pkgconfig_2.0.3   
+[31] htmltools_0.5.1.1  parallelly_1.26.1  dbplyr_2.1.1      
+[34] fastmap_1.1.0      highr_0.9          htmlwidgets_1.5.3 
+[37] rlang_0.4.11       rstudioapi_0.13    RSQLite_2.2.7     
+[40] shiny_1.6.0        jquerylib_0.1.4    farver_2.1.0      
+[43] generics_0.1.0     jsonlite_1.7.2     crosstalk_1.1.1   
+[46] distill_1.2        Matrix_1.3-4       Rcpp_1.0.6        
+[49] munsell_0.5.0      fansi_0.5.0        lifecycle_1.0.0   
+[52] stringi_1.6.2      yaml_2.2.1         snakecase_0.11.0  
+[55] plyr_1.8.6         grid_4.1.0         blob_1.2.1        
+[58] parallel_4.1.0     listenv_0.8.0      promises_1.2.0.1  
+[61] crayon_1.4.1       miniUI_0.1.1.1     lattice_0.20-44   
+[64] splines_4.1.0      hms_1.1.0          knitr_1.33        
+[67] pillar_1.6.1       codetools_0.2-18   glue_1.4.2        
+[70] evaluate_0.14      data.table_1.14.0  httpuv_1.6.1      
+[73] png_0.1-7          vctrs_0.3.8        gtable_0.3.0      
+[76] assertthat_0.2.1   cachem_1.0.5       xfun_0.24         
+[79] mime_0.11          xtable_1.8-4       later_1.2.0       
+[82] ragg_1.1.3         viridisLite_0.4.0  memoise_2.0.0     
+[85] globals_0.14.0     ellipsis_0.3.2    </code></pre>
 </div>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->

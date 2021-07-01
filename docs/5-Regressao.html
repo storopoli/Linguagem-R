@@ -2355,7 +2355,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2525,19 +2525,19 @@ Call:
 lm(formula = kid_score ~ mom_iq, data = kidiq)
 
 Residuals:
-    Min      1Q  Median      3Q     Max 
--56.753 -12.074   2.217  11.710  47.691 
+   Min     1Q Median     3Q    Max 
+-56.75 -12.07   2.22  11.71  47.69 
 
 Coefficients:
-            Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept) 25.79978    5.91741    4.36 1.63e-05 ***
-mom_iq       0.60997    0.05852   10.42  &lt; 2e-16 ***
+            Estimate Std. Error t value             Pr(&gt;|t|)    
+(Intercept)  25.7998     5.9174    4.36             0.000016 ***
+mom_iq        0.6100     0.0585   10.42 &lt; 0.0000000000000002 ***
 ---
 Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-Residual standard error: 18.27 on 432 degrees of freedom
-Multiple R-squared:  0.201, Adjusted R-squared:  0.1991 
-F-statistic: 108.6 on 1 and 432 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 18 on 432 degrees of freedom
+Multiple R-squared:  0.201, Adjusted R-squared:  0.199 
+F-statistic:  109 on 1 and 432 DF,  p-value: &lt;0.0000000000000002</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -2550,20 +2550,20 @@ Call:
 lm(formula = kid_score ~ mom_iq + mom_hs, data = kidiq)
 
 Residuals:
-    Min      1Q  Median      3Q     Max 
--52.873 -12.663   2.404  11.356  49.545 
+   Min     1Q Median     3Q    Max 
+ -52.9  -12.7    2.4   11.4   49.5 
 
 Coefficients:
-            Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept) 25.73154    5.87521   4.380 1.49e-05 ***
-mom_iq       0.56391    0.06057   9.309  &lt; 2e-16 ***
-mom_hs       5.95012    2.21181   2.690  0.00742 ** 
+            Estimate Std. Error t value             Pr(&gt;|t|)    
+(Intercept)  25.7315     5.8752    4.38             0.000015 ***
+mom_iq        0.5639     0.0606    9.31 &lt; 0.0000000000000002 ***
+mom_hs        5.9501     2.2118    2.69               0.0074 ** 
 ---
 Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-Residual standard error: 18.14 on 431 degrees of freedom
-Multiple R-squared:  0.2141,    Adjusted R-squared:  0.2105 
-F-statistic: 58.72 on 2 and 431 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 18 on 431 degrees of freedom
+Multiple R-squared:  0.214, Adjusted R-squared:  0.21 
+F-statistic: 58.7 on 2 and 431 DF,  p-value: &lt;0.0000000000000002</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -2576,21 +2576,21 @@ Call:
 lm(formula = kid_score ~ mom_iq * mom_hs, data = kidiq)
 
 Residuals:
-    Min      1Q  Median      3Q     Max 
--52.092 -11.332   2.066  11.663  43.880 
+   Min     1Q Median     3Q    Max 
+-52.09 -11.33   2.07  11.66  43.88 
 
 Coefficients:
-              Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)   -11.4820    13.7580  -0.835 0.404422    
-mom_iq          0.9689     0.1483   6.531 1.84e-10 ***
-mom_hs         51.2682    15.3376   3.343 0.000902 ***
-mom_iq:mom_hs  -0.4843     0.1622  -2.985 0.002994 ** 
+              Estimate Std. Error t value      Pr(&gt;|t|)    
+(Intercept)    -11.482     13.758   -0.83        0.4044    
+mom_iq           0.969      0.148    6.53 0.00000000018 ***
+mom_hs          51.268     15.338    3.34        0.0009 ***
+mom_iq:mom_hs   -0.484      0.162   -2.99        0.0030 ** 
 ---
 Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-Residual standard error: 17.97 on 430 degrees of freedom
-Multiple R-squared:  0.2301,    Adjusted R-squared:  0.2247 
-F-statistic: 42.84 on 3 and 430 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 18 on 430 degrees of freedom
+Multiple R-squared:  0.23,  Adjusted R-squared:  0.225 
+F-statistic: 42.8 on 3 and 430 DF,  p-value: &lt;0.0000000000000002</code></pre>
 </div>
 <p>Se você quiser <em>plotar</em> modelos de regressão há o pacote <code>{ggeffect}</code>.</p>
 <h2 id="regressão-logística">Regressão Logística</h2>
@@ -2646,16 +2646,16 @@ glm(formula = switch ~ arsenic + dist + educ + assoc, family = binomial,
     data = wells)
 
 Deviance Residuals: 
-    Min       1Q   Median       3Q      Max  
--2.5942  -1.1976   0.7541   1.0632   1.6739  
+   Min      1Q  Median      3Q     Max  
+-2.594  -1.198   0.754   1.063   1.674  
 
 Coefficients:
-             Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept) -0.156712   0.099601  -1.573    0.116    
-arsenic      0.467022   0.041602  11.226  &lt; 2e-16 ***
-dist        -0.008961   0.001046  -8.569  &lt; 2e-16 ***
-educ         0.042447   0.009588   4.427 9.55e-06 ***
-assoc       -0.124300   0.076966  -1.615    0.106    
+            Estimate Std. Error z value             Pr(&gt;|z|)    
+(Intercept) -0.15671    0.09960   -1.57                 0.12    
+arsenic      0.46702    0.04160   11.23 &lt; 0.0000000000000002 ***
+dist        -0.00896    0.00105   -8.57 &lt; 0.0000000000000002 ***
+educ         0.04245    0.00959    4.43            0.0000095 ***
+assoc       -0.12430    0.07697   -1.61                 0.11    
 ---
 Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
@@ -2663,7 +2663,7 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 
     Null deviance: 4118.1  on 3019  degrees of freedom
 Residual deviance: 3907.8  on 3015  degrees of freedom
-AIC: 3917.8
+AIC: 3918
 
 Number of Fisher Scoring iterations: 4</code></pre>
 </div>
@@ -2674,7 +2674,7 @@ Number of Fisher Scoring iterations: 4</code></pre>
 </code></pre>
 </div>
 <pre><code>(Intercept)     arsenic        dist        educ       assoc 
-  0.8549505   1.5952358   0.9910789   1.0433604   0.8831149 </code></pre>
+       0.85        1.60        0.99        1.04        0.88 </code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -2755,16 +2755,16 @@ glm(formula = y ~ roach1 + treatment + senior + exposure2, family = poisson,
     data = roaches)
 
 Deviance Residuals: 
-    Min       1Q   Median       3Q      Max  
--18.353   -5.285   -4.178    0.290   27.674  
+   Min      1Q  Median      3Q     Max  
+-18.35   -5.29   -4.18    0.29   27.67  
 
 Coefficients:
-              Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)  2.967e+00  4.339e-02  68.377  &lt; 2e-16 ***
-roach1       6.525e-03  9.015e-05  72.380  &lt; 2e-16 ***
-treatment   -5.149e-01  2.468e-02 -20.862  &lt; 2e-16 ***
-senior      -3.788e-01  3.356e-02 -11.288  &lt; 2e-16 ***
-exposure2    1.620e-01  3.623e-02   4.473  7.7e-06 ***
+              Estimate Std. Error z value             Pr(&gt;|z|)    
+(Intercept)  2.9665993  0.0433859   68.38 &lt; 0.0000000000000002 ***
+roach1       0.0065252  0.0000902   72.38 &lt; 0.0000000000000002 ***
+treatment   -0.5148722  0.0246802  -20.86 &lt; 0.0000000000000002 ***
+senior      -0.3787607  0.0335552  -11.29 &lt; 0.0000000000000002 ***
+exposure2    0.1620458  0.0362256    4.47            0.0000077 ***
 ---
 Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
@@ -2783,7 +2783,7 @@ Number of Fisher Scoring iterations: 6</code></pre>
 </code></pre>
 </div>
 <pre><code>(Intercept)      roach1   treatment      senior   exposure2 
- 19.4257454   1.0065465   0.5975770   0.6847095   1.1759141 </code></pre>
+      19.43        1.01        0.60        0.68        1.18 </code></pre>
 </div>
 <h2 id="como-plotar-modelos-com-o-ggeffects">Como <em>plotar</em> modelos com o <code>{ggeffects}</code></h2>
 <p>Podemos usar o pacote [<code>{ggeffects}](https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html) para *plotar* objetos</code>lm<code>e</code>glm`</p>
@@ -2839,55 +2839,61 @@ $exposure2</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
 </code></pre>
 </div>
-<pre><code>R version 4.0.3 (2020-10-10)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 20.04.2 LTS
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Big Sur 11.4
 
 Matrix products: default
-BLAS:   /usr/lib/x86_64-linux-gnu/atlas/libblas.so.3.10.3
-LAPACK: /usr/lib/x86_64-linux-gnu/atlas/liblapack.so.3.10.3
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
 
 locale:
- [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C          
- [3] LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8    
- [5] LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
- [7] LC_PAPER=C.UTF-8       LC_NAME=C             
- [9] LC_ADDRESS=C           LC_TELEPHONE=C        
-[11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods  
 [7] base     
 
 other attached packages:
-[1] ggeffects_1.0.2 readr_1.4.0     broom_0.7.5     patchwork_1.1.1
-[5] dplyr_1.0.5     ggplot2_3.3.3  
+ [1] ggeffects_1.1.0   broom_0.7.8       furrr_0.2.3      
+ [4] future_1.21.0     purrr_0.3.4       ggridges_0.5.3   
+ [7] ggExtra_0.9       gghighlight_0.3.2 ggrepel_0.9.1    
+[10] patchwork_1.1.1   forcats_0.5.1     plotly_4.9.4.1   
+[13] repurrrsive_1.0.0 ggplot2_3.3.5     stringr_1.4.0    
+[16] tidyr_1.1.3       janitor_2.1.0     dplyr_1.0.7      
+[19] readr_1.4.0       magrittr_2.0.1    tibble_3.1.2     
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.6        lattice_0.20-41   tidyr_1.1.3      
- [4] png_0.1-7         assertthat_0.2.1  digest_0.6.27    
- [7] utf8_1.2.1        R6_2.5.0          backports_1.2.1  
-[10] survey_4.0        evaluate_0.14     highr_0.8        
-[13] pillar_1.5.1      rlang_0.4.10      minqa_1.2.4      
-[16] jquerylib_0.1.3   nloptr_1.2.2.2    Matrix_1.2-18    
-[19] rmarkdown_2.7     labeling_0.4.2    splines_4.0.3    
-[22] lme4_1.1-26       statmod_1.4.35    stringr_1.4.0    
-[25] munsell_0.5.0     compiler_4.0.3    xfun_0.22        
-[28] pkgconfig_2.0.3   mgcv_1.8-33       mitools_2.4      
-[31] htmltools_0.5.1.1 nnet_7.3-14       downlit_0.2.1    
-[34] insight_0.13.2    tidyselect_1.1.0  tibble_3.1.0     
-[37] fansi_0.4.2       crayon_1.4.1      withr_2.4.1      
-[40] MASS_7.3-53       grid_4.0.3        nlme_3.1-149     
-[43] jsonlite_1.7.2    gtable_0.3.0      lifecycle_1.0.0  
-[46] DBI_1.1.1         magrittr_2.0.1    scales_1.1.1     
-[49] estimability_1.3  stringi_1.5.3     carData_3.0-4    
-[52] farver_2.1.0      snakecase_0.11.0  bslib_0.2.4      
-[55] ellipsis_0.3.1    effects_4.2-0     generics_0.1.0   
-[58] vctrs_0.3.7       boot_1.3-25       distill_1.2      
-[61] sjlabelled_1.1.7  tools_4.0.3       glue_1.4.2       
-[64] purrr_0.3.4       hms_1.0.0         survival_3.2-7   
-[67] yaml_2.2.1        colorspace_2.0-0  knitr_1.31       
-[70] sass_0.3.1       </code></pre>
+ [1] nlme_3.1-152       lubridate_1.7.10   bit64_4.0.5       
+ [4] insight_0.14.2     RColorBrewer_1.1-2 httr_1.4.2        
+ [7] rprojroot_2.0.2    backports_1.2.1    tools_4.1.0       
+[10] bslib_0.2.5.1      sjlabelled_1.1.8   utf8_1.2.1        
+[13] R6_2.5.0           DBI_1.1.1          lazyeval_0.2.2    
+[16] mgcv_1.8-35        colorspace_2.0-2   withr_2.4.2       
+[19] tidyselect_1.1.1   downlit_0.2.1      bit_4.0.4         
+[22] compiler_4.1.0     textshaping_0.3.5  cli_3.0.0         
+[25] labeling_0.4.2     bookdown_0.22      sass_0.4.0        
+[28] scales_1.1.1       systemfonts_1.0.2  digest_0.6.27     
+[31] rmarkdown_2.9      jpeg_0.1-8.1       pkgconfig_2.0.3   
+[34] htmltools_0.5.1.1  parallelly_1.26.1  dbplyr_2.1.1      
+[37] fastmap_1.1.0      highr_0.9          htmlwidgets_1.5.3 
+[40] rlang_0.4.11       rstudioapi_0.13    RSQLite_2.2.7     
+[43] shiny_1.6.0        jquerylib_0.1.4    farver_2.1.0      
+[46] generics_0.1.0     jsonlite_1.7.2     crosstalk_1.1.1   
+[49] distill_1.2        Matrix_1.3-4       Rcpp_1.0.6        
+[52] munsell_0.5.0      fansi_0.5.0        lifecycle_1.0.0   
+[55] stringi_1.6.2      yaml_2.2.1         snakecase_0.11.0  
+[58] plyr_1.8.6         grid_4.1.0         blob_1.2.1        
+[61] parallel_4.1.0     listenv_0.8.0      promises_1.2.0.1  
+[64] crayon_1.4.1       miniUI_0.1.1.1     lattice_0.20-44   
+[67] splines_4.1.0      hms_1.1.0          knitr_1.33        
+[70] pillar_1.6.1       codetools_0.2-18   glue_1.4.2        
+[73] evaluate_0.14      data.table_1.14.0  httpuv_1.6.1      
+[76] png_0.1-7          vctrs_0.3.8        gtable_0.3.0      
+[79] assertthat_0.2.1   cachem_1.0.5       xfun_0.24         
+[82] mime_0.11          xtable_1.8-4       later_1.2.0       
+[85] ragg_1.1.3         viridisLite_0.4.0  memoise_2.0.0     
+[88] globals_0.14.0     ellipsis_0.3.2    </code></pre>
 </div>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <section class="footnotes" role="doc-endnotes">

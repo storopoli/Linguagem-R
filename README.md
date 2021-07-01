@@ -4,6 +4,18 @@ Linguagem R
 [![CC BY-SA
 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-sa/4.0/)
 
+O workshop todo foi gravado e disponibilizado no YouTube na playlist
+abaixo:
+
+<style>.embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; } .embed-container iframe, .embed-container object, .embed-container embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }</style>
+
+<div class="embed-container">
+
+<iframe src="https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd" frameborder="0" allowfullscreen>
+</iframe>
+
+</div>
+
 <div class="figure" style="text-align: center">
 
 <img src="images/code-hero.png" alt="Linguagem R" width="720" />
@@ -58,9 +70,9 @@ Para configurar um ambiente local:
 
 ## Aulas
 
--   [**Aula 1 — O que é
+-   [**Aula 1 - O que é
     R?**](https://storopoli.io/Linguagem-R/1-O_que_e_R.html): Tipos de
-    Variáveis, Estrutura de Dados, RStudio e Rmarkdown.
+    Varíaveis, Estrutura de Dados, RStudio e Rmarkdown.
 -   [**Aulas 2 e 3 — Manipulação de
     Dados**](https://storopoli.io/Linguagem-R/2-Manipulacao_Dados.html):
     `dplyr`, `readr`, `tidyr` e `stringr`.
