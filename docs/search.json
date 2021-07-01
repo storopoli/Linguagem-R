@@ -72,7 +72,7 @@
     },
     {
       "path": "index.html",
-      "title": "Linguagem R",
+      "title": "Ciência de Dados com R e tidyverse",
       "description": "Disciplina de Linguaguem R para Ciência de Dados de Pós-Graduação da UNINOVE",
       "author": [
         {
@@ -82,7 +82,7 @@
       ],
       "date": "April 5, 2021",
       "contents": "\n\nContents\nProfessor\nComo usar esse conteúdo?\nAulas\nComo citar esse conteúdo\nLicença\n\n\n\nO workshop todo foi gravado e disponibilizado no YouTube na playlist abaixo:\n.embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; } .embed-container iframe, .embed-container object, .embed-container embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }\n\n\n\n\n\n\nFigure 1: Linguagem R\n\n\n\nRStudio: \nDisciplina de Análise de Dados com R para alunos de pós-graduação. O conteúdo é todo baseado no universo do {tidyverse}.\nSerá coberto conteúdos sobre leitura, manipulação e exportação de dados com R. Recomendo o livro R para Data Science (Figura 2) que pode ser encontrado gratuitamente aqui e possui uma versão impressa em português.\n\n\n\nFigure 2: R for Data Science\n\n\n\nProfessor\nProf. Dr. José Eduardo Storopoli - Currículo Lattes - ORCID - https://storopoli.io\njosees@uni9.pro.br\nComo usar esse conteúdo?\nEste conteúdo possui licença livre para uso (CC BY-SA). Caso queira utilizar o conteúdo para um curso ou estudos, por favor colabore nesse repositório quaisquer aprimorações que foram realizadas.\nPara configurar um ambiente local:\nClone o repositório do GitHub: git clone https://github.com/storopoli/Linguagem-R.git\nAcesse o diretório: cd Linguagem-R\nInstale os pacotes necessários: Rscript .binder/install.R\nAulas\nAula 1 - O que é R?: Tipos de Varíaveis, Estrutura de Dados, RStudio e Rmarkdown.\nAulas 2 e 3 — Manipulação de Dados: dplyr, readr, tidyr e stringr.\nAulas 4 e 5 — Visualização de Dados: ggplot2, scales, patchwork, e mais.\nAulas 6 — Programação Funcional: purrr e furrr.\nAula 7 — Regressão Linear e Regressão Logística: lm e glm.\nComo citar esse conteúdo\nPara citar o conteúdo use:\nStoropoli (2021). Linguagem R. Disponível em: https://storopoli.io/Linguagem-R.\nOu em formato BibTeX para LaTeX:\n@misc{storopoli2021linguagemR,\n  author = {Storopoli, Jose},\n  title = {Linguagem R},\n  url = {https://storopoli.io/Linguagem-R},\n  year = {2021}\n}\nLicença\nEste obra está licenciado com uma Licença Creative Commons Atribuição-CompartilhaIgual 4.0 Internacional.\n\n\n\n\n",
-      "last_modified": "2021-07-01T13:39:03-03:00"
+      "last_modified": "2021-07-01T13:44:36-03:00"
     }
   ],
   "collections": []

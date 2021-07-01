@@ -1,4 +1,4 @@
-Linguagem R
+Ciência de Dados com R e tidyverse
 ================
 
 [![CC BY-SA
@@ -7,14 +7,8 @@ Linguagem R
 O workshop todo foi gravado e disponibilizado no YouTube na playlist
 abaixo:
 
-<style>.embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; } .embed-container iframe, .embed-container object, .embed-container embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }</style>
-
-<div class="embed-container">
-
-<iframe src="https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd" frameborder="0" allowfullscreen>
-</iframe>
-
-</div>
+[![Ciência de Dados com R e
+tidyverse](images/youtube_pic.png)](https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd)
 
 <div class="figure" style="text-align: center">
 

@@ -1,6 +1,6 @@
 ---
-title: "Linguagem R"
-description: "Linguagem R"
+title: "Ciência de Dados com R e tidyverse"
+description: "Ciência de Dados com R e tidyverse"
 output: github_document
 editor_options:
   markdown:
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 O workshop todo foi gravado e disponibilizado no YouTube na playlist abaixo:
 
-<style>.embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; } .embed-container iframe, .embed-container object, .embed-container embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }</style><div class='embed-container'><iframe src='https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd' frameborder='0' allowfullscreen></iframe></div>
+[![Ciência de Dados com R e tidyverse](images/youtube_pic.png)](https://www.youtube.com/embed/videoseries?list=PLpTXaEnTpmwPfh52DcUbXcH2RdOi_idFd)
 
 ```{r code-hero, echo=FALSE, fig.align='center', fig.cap='Linguagem R'}
 knitr::include_graphics("images/code-hero.png")

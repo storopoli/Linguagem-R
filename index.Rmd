@@ -1,5 +1,5 @@
 ---
-title: "Linguagem R"
+title: "Ciência de Dados com R e tidyverse"
 description: "Disciplina de Linguaguem R para Ciência de Dados de Pós-Graduação da UNINOVE"
 author:
   - name: Jose Storopoli
