@@ -1,3 +1,5 @@
+# Participantes Certificados
+
 Adriane Nascimento Becker
 Alessandra Cristina Guedes Pellini
 Alvaro Antônio da Silva
@@ -35,4 +37,3 @@ Rogerio Santino Barboza
 Samara de Carvalho Pedro
 Simone Cesar da Silva Vicente
 Thiago de Luca Sant'ana Ribeiro
-![image](https://user-images.githubusercontent.com/80989614/124639356-71a91600-de62-11eb-9a6a-7b2acea6fb0e.png)
