@@ -3,6 +3,7 @@
 - Adriane Nascimento Becker
 - Alessandra Cristina Guedes Pellini
 - Alvaro Antônio da Silva
+- Camila Fragoso Ribeiro
 - Carolina Ramos Fugimoto
 - Caroline Santana Moura
 - Cleinton Luiz Klochinski
