@@ -37,3 +37,4 @@
 - Samara de Carvalho Pedro
 - Simone Cesar da Silva Vicente
 - Thiago de Luca Sant'ana Ribeiro
+- Camila Fragoso Ribeiro
