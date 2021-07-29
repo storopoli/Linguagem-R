@@ -84,13 +84,13 @@ Para configurar um ambiente local:
 
 Para citar o conteúdo use:
 
-    Storopoli (2021). Linguagem R. Disponível em: https://storopoli.io/Linguagem-R.
+    Storopoli (2021). Ciência de Dados com R e tidyverse. Disponível em: https://storopoli.io/Linguagem-R.
 
 Ou em formato BibTeX para LaTeX:
 
     @misc{storopoli2021linguagemR,
       author = {Storopoli, Jose},
-      title = {Linguagem R},
+      title = {Ciência de Dados com R e tidyverse},
       url = {https://storopoli.io/Linguagem-R},
       year = {2021}
     }
