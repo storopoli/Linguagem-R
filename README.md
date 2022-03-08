@@ -20,7 +20,7 @@ Linguagem R
 </div>
 
 **RStudio**:
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/storopoli/Estatistica-Bayesiana/master?urlpath=rstudio)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/storopoli/Linguagem-R/main?urlpath=rstudio)
 
 Disciplina de Análise de Dados com R para alunos de pós-graduação. O
 conteúdo é todo baseado no universo do
