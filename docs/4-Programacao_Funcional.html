@@ -84,6 +84,7 @@ code span.vs { color: #4e9a06; } /* VerbatimString */
 code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+
   <!--radix_placeholder_meta_tags-->
   <title>Linguagem R: Programação Funcional</title>
 
@@ -467,7 +468,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
   </style>
 
-  <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+  <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
   <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet"/>
   <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet"/>
   <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
@@ -798,6 +799,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
   d-article table.gt_table td,
   d-article table.gt_table th {
     border-bottom: none;
+    font-size: 100%;
   }
 
   .html-widget {
@@ -1039,10 +1041,6 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     position: relative;
     margin-bottom: 2.5em;
     margin-top: 1.5em;
-  }
-
-  .figure img {
-    width: 100%;
   }
 
   .figure .caption {
@@ -1874,7 +1872,22 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
       // hoverable references
       $('span.citation[data-cites]').each(function() {
-        var refHtml = $('#ref-' + $(this).attr('data-cites')).html();
+        const citeChild = $(this).children()[0]
+        // Do not process if @xyz has been used without escaping and without bibliography activated
+        // https://github.com/rstudio/distill/issues/466
+        if (citeChild === undefined) return true
+
+        if (citeChild.nodeName == "D-FOOTNOTE") {
+          var fn = citeChild
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
+        var refs = $(this).attr('data-cites').split(" ");
+        var refHtml = refs.map(function(ref) {
+          // Could use CSS.escape too here, we insure backward compatibility in navigator
+          return "<p>" + $('div[id="ref-' + ref + '"]').html() + "</p>";
+        }).join("\n");
         window.tippy(this, {
           allowHTML: true,
           content: refHtml,
@@ -1885,6 +1898,31 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
           placement: 'bottom-start'
         });
       });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
 
       // clear polling timer
       clearInterval(tid);
@@ -1984,6 +2022,8 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     // mark non-body figures created by knitr chunks as 100% width
     $('.layout-chunk').each(function(i, val) {
       var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
       if ($(this).attr('data-layout') !== "l-body") {
         figures.css('width', '100%');
       } else {
@@ -2006,7 +2046,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     // get rid of index.html references in header
     if (window.location.protocol !== "file:") {
       $('.distill-site-header a[href]').each(function(i,val) {
-        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
       });
     }
 
@@ -2355,7 +2395,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2433,16 +2473,16 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <nav class="l-text toc figcaption" id="TOC">
 <h3>Contents</h3>
 <ul>
-<li><a href="#map_"><code>map_*()</code></a></li>
-<li><a href="#professor-e-a">Professor, e a <code>~</code>?</a></li>
-<li><a href="#moah-power-furrr">MOAH POWER! <code>{furrr}</code></a></li>
-<li><a href="#ambiente">Ambiente</a></li>
+<li><a href="#map_" id="toc-map_"><code>map_*()</code></a></li>
+<li><a href="#professor-e-a" id="toc-professor-e-a">Professor, e a <code>~</code>?</a></li>
+<li><a href="#moah-power-furrr" id="toc-moah-power-furrr">MOAH POWER! <code>{furrr}</code></a></li>
+<li><a href="#ambiente" id="toc-ambiente">Ambiente</a></li>
 </ul>
 </nav>
 </div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure" style="text-align: center"><span id="fig:map-frosting"></span>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:map-frosting"></span>
 <img src="images/map_frosting.png" alt="Programação Funcional" width="2934" />
 <p class="caption">
 Figure 1: Programação Funcional
@@ -2459,40 +2499,38 @@ Figure 1: Programação Funcional
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>list <span class="sc">%&gt;%</span> <span class="fu">map</span>(f)    <span class="co"># ou map(list, f)</span></span></code></pre></div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://purrr.tidyverse.org'>purrr</a></span><span class='op'>)</span>
-<span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='va'>rnorm</span>, <span class='fl'>5</span>, <span class='fl'>10</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://purrr.tidyverse.org/'>purrr</a></span><span class='op'>)</span></span>
+<span><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='va'>rnorm</span>, <span class='fl'>5</span>, <span class='fl'>10</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[[1]]
-[1] -1.6
+[1] -0.66
 
 [[2]]
-[1] 5.8 4.3
+[1] -2.8  9.6
 
 [[3]]
-[1] -12.3 -22.2   9.5
+[1]  0.47 -6.42 12.58
 
 [[4]]
-[1] -15.2  -5.1  30.9  -5.7
+[1] 11.2  4.5  4.8  8.2
 
 [[5]]
-[1] 16.55  5.18 13.63 11.00  0.89
+[1] -6.4 20.6 -1.6  5.8  4.3
 
 [[6]]
-[1]  15.2  -5.0 -10.1  16.0  20.6  -7.1
+[1] -12.3 -22.2   9.5 -15.2  -5.1  30.9
 
 [[7]]
-[1] 20.1 21.8  7.4  7.4 14.6  7.5  3.6
+[1] -5.65 16.55  5.18 13.63 11.00  0.89 15.21
 
 [[8]]
-[1]   3.89   6.48  19.70  -1.79   0.67   3.99 -11.44   8.04
+[1]  -5.0 -10.1  16.0  20.6  -7.1  20.1  21.8   7.4
 
 [[9]]
-[1] 14.7 15.9 24.0 -4.3 28.1  9.6  4.9  2.0 16.6
+[1]  7.39 14.63  7.47  3.57  3.89  6.48 19.70 -1.79  0.67
 
 [[10]]
- [1]  -9.96  -0.41  -0.29  -8.56  -9.73  13.21  -6.07   0.33  27.48
-[10]  27.42</code></pre>
+ [1]   4.0 -11.4   8.0  14.7  15.9  24.0  -4.3  28.1   9.6   4.9</code></pre>
 </div>
 <ul>
 <li><code>map()</code> — sempre retorna uma <code>list</code></li>
@@ -2505,33 +2543,31 @@ Figure 1: Programação Funcional
 <p>Conversão implícita</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='va'>rnorm</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dbl</a></span><span class='op'>(</span><span class='va'>mean</span><span class='op'>)</span> <span class='co'># igual a map_dbl(~mean(.x))</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='va'>rnorm</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dbl</a></span><span class='op'>(</span><span class='va'>mean</span><span class='op'>)</span> <span class='co'># igual a map_dbl(~mean(.x))</span></span></code></pre>
 </div>
-<pre><code> [1]  0.30  0.73 -1.12 -0.42  0.58 -0.12  0.29 -0.17  0.49  0.15</code></pre>
+<pre><code> [1] -0.297 -0.167 -0.809 -0.556  1.251 -0.713  0.319 -0.045  0.389
+[10]  0.103</code></pre>
 </div>
 <h2 id="professor-e-a">Professor, e a <code>~</code>?</h2>
 <p>O tio <code>~</code> (em inglês é tilde) ele funciona quando você precisa especificar funções e argumentos mais complexos:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"meu"</span>, <span class='st'>"microfone"</span>, <span class='st'>"está"</span>, <span class='st'>"aberto"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='co'># vire um vetor de c("meuprefixo_meu", ...)</span>
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_chr</a></span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>"meuprefixo_"</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"meu"</span>, <span class='st'>"microfone"</span>, <span class='st'>"está"</span>, <span class='st'>"aberto"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># vire um vetor de c("meuprefixo_meu", ...)</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_chr</a></span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>"meuprefixo_"</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[1] &quot;meuprefixo_meu&quot;       &quot;meuprefixo_microfone&quot;
 [3] &quot;meuprefixo_está&quot;      &quot;meuprefixo_aberto&quot;   </code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>mtcars</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[[1]]</code></pre>
 <p><img src="4-Programacao_Funcional_files/figure-html5/map-ggplot-1.png" width="624" /></p>
@@ -2548,45 +2584,42 @@ Figure 1: Programação Funcional
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>walk</a></span><span class='op'>(</span><span class='op'>~</span> <span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>walk</a></span><span class='op'>(</span><span class='op'>~</span> <span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span>      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk-1.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk-2.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk-3.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mpg"</span>, <span class='st'>"cyl"</span>, <span class='st'>"gear"</span><span class='op'>)</span>
-
-<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map2.html'>walk2</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='op'>~</span><span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mpg"</span>, <span class='st'>"cyl"</span>, <span class='st'>"gear"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map2.html'>walk2</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='op'>~</span><span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span>      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk2-1.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk2-2.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-walk2-3.png" width="624" /></p>
 </div>
 <p>Agora o <code>purrr::pwalk()</code></p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mpg"</span>, <span class='st'>"cyl"</span>, <span class='st'>"gear"</span><span class='op'>)</span>
-<span class='va'>z</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"vs"</span>, <span class='st'>"am"</span>, <span class='st'>"cyl"</span><span class='op'>)</span>
-<span class='va'>list_v</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span>, <span class='va'>z</span><span class='op'>)</span>
-
-<span class='va'>list_v</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map2.html'>pwalk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'>%&gt;%</span> 
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>..1</span>, <span class='va'>..2</span>, colour <span class='op'>=</span> <span class='va'>..3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># e continua ..4 ..5 ..6</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hp"</span>, <span class='st'>"wt"</span>, <span class='st'>"qsec"</span><span class='op'>)</span></span>
+<span><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mpg"</span>, <span class='st'>"cyl"</span>, <span class='st'>"gear"</span><span class='op'>)</span></span>
+<span><span class='va'>z</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"vs"</span>, <span class='st'>"am"</span>, <span class='st'>"cyl"</span><span class='op'>)</span></span>
+<span><span class='va'>list_v</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span>, <span class='va'>z</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>list_v</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/pmap.html'>pwalk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mtcars</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_.html'>aes_string</a></span><span class='op'>(</span><span class='va'>..1</span>, <span class='va'>..2</span>, colour <span class='op'>=</span> <span class='va'>..3</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># e continua ..4 ..5 ..6</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>        <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span>      <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="4-Programacao_Funcional_files/figure-html5/purrr-pwalk-1.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-pwalk-2.png" width="624" /><img src="4-Programacao_Funcional_files/figure-html5/purrr-pwalk-3.png" width="624" /></p>
 </div>
@@ -2613,11 +2646,10 @@ Figure 1: Programação Funcional
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fl'>8</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>walk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span>
-    <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span>
-    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='st'>"Oi"</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fl'>8</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>walk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span></span>
+<span>    <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span></span>
+<span>    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='st'>"Oi"</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[1] &quot;Oi&quot;
 [1] &quot;Oi&quot;
@@ -2631,19 +2663,17 @@ Figure 1: Programação Funcional
 <p>Agora com o <code>{furrr}</code>:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/DavisVaughan/furrr'>furrr</a></span><span class='op'>)</span>
-<span class='fu'>plan</span><span class='op'>(</span><span class='va'>multisession</span><span class='op'>)</span> <span class='co'># ou coloque no `.Rprofile` `options(Ncpus = parallel::detectCores())` e `options(mc.cores = parallel::detectCores())`</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/DavisVaughan/furrr'>furrr</a></span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://future.futureverse.org/reference/plan.html'>plan</a></span><span class='op'>(</span><span class='va'>multisession</span><span class='op'>)</span> <span class='co'># ou coloque no `.Rprofile` `options(Ncpus = parallel::detectCores())` e `options(mc.cores = parallel::detectCores())`</span></span></code></pre>
 </div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fl'>8</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/future_map.html'>future_walk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span>
-    <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span>
-    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='st'>"Oi"</span><span class='op'>)</span><span class='op'>}</span>,
-    .progress <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fl'>8</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://furrr.futureverse.org/reference/future_map.html'>future_walk</a></span><span class='op'>(</span><span class='op'>~</span><span class='op'>{</span></span>
+<span>    <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span></span>
+<span>    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='st'>"Oi"</span><span class='op'>)</span><span class='op'>}</span>,</span>
+<span>    .progress <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[1] &quot;Oi&quot;
 [1] &quot;Oi&quot;
@@ -2654,141 +2684,143 @@ Figure 1: Programação Funcional
 [1] &quot;Oi&quot;
 [1] &quot;Oi&quot;</code></pre>
 </div>
-<p>Se for mexer com coisas aleatórias é importante usar o argumento: * <code>.options = furrr_options(seed = TRUE)</code></p>
+<p>Se for mexer com coisas aleatórias é importante usar o argumento:
+* <code>.options = furrr_options(seed = TRUE)</code></p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/future_map.html'>future_map</a></span><span class='op'>(</span><span class='va'>rnorm</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://furrr.futureverse.org/reference/future_map.html'>future_map</a></span><span class='op'>(</span><span class='va'>rnorm</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[[1]]
-[1] -1.1
+[1] 0.33
 
 [[2]]
-[1]  0.34 -2.01
+[1] -0.76 -0.37
 
 [[3]]
-[1]  0.101 -0.048 -0.260
+[1] -2.06 -1.83  0.85
 
 [[4]]
-[1] -1.0  1.2  1.9 -0.7
+[1] -1.306  1.214  0.026 -0.457
 
 [[5]]
-[1] -0.62  0.34 -0.39 -1.47 -0.11
+[1]  0.95 -0.61 -0.49 -1.37  0.55
 
 [[6]]
-[1]  0.12  0.86  1.38 -0.82  0.59  1.69
+[1]  1.07  0.53 -0.35  0.18 -0.31 -1.75
 
 [[7]]
-[1] -0.256  0.957 -0.486  3.089 -1.994  0.086  0.581
+[1] -0.63 -0.40  1.45  1.33 -0.47  0.48 -0.40
 
 [[8]]
-[1]  0.48  1.16 -0.99 -0.12 -1.11 -1.58  0.52  0.94
+[1] -1.005  1.912  0.479  0.578  0.031  0.059  0.534  0.138
 
 [[9]]
-[1] -1.554  0.152  1.692  0.107 -0.916  0.560  2.328 -0.058 -0.475
+[1] -0.948  0.081 -0.310  0.133  0.869  1.014 -0.472  0.433  1.420
 
 [[10]]
- [1]  0.016 -0.362 -0.228 -0.774  1.012  0.665  0.756 -0.043  1.059
-[10]  0.869</code></pre>
+ [1]  0.829  2.082 -0.335 -0.657  0.096 -0.346  0.605 -1.011 -0.050
+[10] -0.423</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/future_map.html'>future_map</a></span><span class='op'>(</span><span class='va'>rnorm</span>,
-             .options <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/pkg/furrr/man/furrr_options.html'>furrr_options</a></span><span class='op'>(</span>seed <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fl'>1L</span><span class='op'>:</span><span class='fl'>10L</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://furrr.futureverse.org/reference/future_map.html'>future_map</a></span><span class='op'>(</span><span class='va'>rnorm</span>,</span>
+<span>             .options <span class='op'>=</span> <span class='fu'><a href='https://furrr.futureverse.org/reference/furrr_options.html'>furrr_options</a></span><span class='op'>(</span>seed <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>[[1]]
-[1] 0.59
+[1] 0.32
 
 [[2]]
-[1]  0.24 -0.98
+[1]  0.26 -2.68
 
 [[3]]
-[1]  0.231  0.064 -0.299
+[1] 0.16 0.43 0.91
 
 [[4]]
-[1] 1.168 1.348 0.785 0.063
+[1]  0.30 -1.11 -2.85  0.42
 
 [[5]]
-[1]  2.58  0.17  0.11 -1.15  2.70
+[1]  0.32 -0.59 -0.98 -0.58 -0.52
 
 [[6]]
-[1]  0.54 -0.23 -1.07  0.39  0.91  0.11
+[1] -0.627  0.830  0.367  0.122  1.210  0.091
 
 [[7]]
-[1]  0.65  1.17 -0.57  1.78  0.20  1.77 -1.42
+[1] -0.079 -1.188  0.757  1.256  1.521  0.124 -1.445
 
 [[8]]
-[1]  1.866 -0.843  0.152 -1.764  1.789 -1.026 -1.072 -0.029
+[1] -0.085 -0.036 -1.797  0.366  0.054 -2.345 -0.218 -0.141
 
 [[9]]
-[1]  0.375  1.118  0.942 -0.639 -0.093 -1.363  0.348  0.641 -0.210
+[1] -0.27 -0.42  1.55 -0.39 -0.53 -0.65 -0.85  0.45 -1.15
 
 [[10]]
- [1]  0.0023  0.0910  0.9352  0.9922  0.8922 -1.7373  1.2078  1.1799
- [9] -2.1303  1.1040</code></pre>
+ [1]  0.166  0.084  3.082 -0.108  0.362 -0.876 -0.067 -0.489 -0.976
+[10]  0.712</code></pre>
 </div>
 <h2 id="ambiente">Ambiente</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code>R version 4.1.0 (2021-05-18)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Big Sur 11.4
+<pre><code>R version 4.2.2 (2022-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.1 LTS
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so
 
 locale:
-[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods  
 [7] base     
 
 other attached packages:
- [1] furrr_0.2.3       future_1.21.0     purrr_0.3.4      
- [4] ggridges_0.5.3    ggExtra_0.9       gghighlight_0.3.2
- [7] ggrepel_0.9.1     patchwork_1.1.1   forcats_0.5.1    
-[10] plotly_4.9.4.1    repurrrsive_1.0.0 ggplot2_3.3.5    
-[13] stringr_1.4.0     tidyr_1.1.3       janitor_2.1.0    
-[16] dplyr_1.0.7       readr_1.4.0       magrittr_2.0.1   
-[19] tibble_3.1.2     
+ [1] furrr_0.3.1       future_1.31.0     purrr_1.0.1      
+ [4] ggridges_0.5.4    ggExtra_0.10.0    gghighlight_0.4.0
+ [7] ggrepel_0.9.3     patchwork_1.1.2   forcats_1.0.0    
+[10] plotly_4.10.1     repurrrsive_1.1.0 ggplot2_3.4.1    
+[13] stringr_1.5.0     tidyr_1.3.0       janitor_2.2.0    
+[16] dplyr_1.1.0       readr_2.1.4       magrittr_2.0.3   
+[19] tibble_3.1.8     
 
 loaded via a namespace (and not attached):
- [1] nlme_3.1-152       lubridate_1.7.10   bit64_4.0.5       
- [4] RColorBrewer_1.1-2 httr_1.4.2         rprojroot_2.0.2   
- [7] tools_4.1.0        bslib_0.2.5.1      utf8_1.2.1        
-[10] R6_2.5.0           DBI_1.1.1          lazyeval_0.2.2    
-[13] mgcv_1.8-35        colorspace_2.0-2   withr_2.4.2       
-[16] tidyselect_1.1.1   downlit_0.2.1      bit_4.0.4         
-[19] compiler_4.1.0     textshaping_0.3.5  cli_3.0.0         
-[22] labeling_0.4.2     bookdown_0.22      sass_0.4.0        
-[25] scales_1.1.1       systemfonts_1.0.2  digest_0.6.27     
-[28] rmarkdown_2.9      jpeg_0.1-8.1       pkgconfig_2.0.3   
-[31] htmltools_0.5.1.1  parallelly_1.26.1  dbplyr_2.1.1      
-[34] fastmap_1.1.0      highr_0.9          htmlwidgets_1.5.3 
-[37] rlang_0.4.11       rstudioapi_0.13    RSQLite_2.2.7     
-[40] shiny_1.6.0        jquerylib_0.1.4    farver_2.1.0      
-[43] generics_0.1.0     jsonlite_1.7.2     crosstalk_1.1.1   
-[46] distill_1.2        Matrix_1.3-4       Rcpp_1.0.6        
-[49] munsell_0.5.0      fansi_0.5.0        lifecycle_1.0.0   
-[52] stringi_1.6.2      yaml_2.2.1         snakecase_0.11.0  
-[55] plyr_1.8.6         grid_4.1.0         blob_1.2.1        
-[58] parallel_4.1.0     listenv_0.8.0      promises_1.2.0.1  
-[61] crayon_1.4.1       miniUI_0.1.1.1     lattice_0.20-44   
-[64] splines_4.1.0      hms_1.1.0          knitr_1.33        
-[67] pillar_1.6.1       codetools_0.2-18   glue_1.4.2        
-[70] evaluate_0.14      data.table_1.14.0  httpuv_1.6.1      
-[73] png_0.1-7          vctrs_0.3.8        gtable_0.3.0      
-[76] assertthat_0.2.1   cachem_1.0.5       xfun_0.24         
-[79] mime_0.11          xtable_1.8-4       later_1.2.0       
-[82] ragg_1.1.3         viridisLite_0.4.0  memoise_2.0.0     
-[85] globals_0.14.0     ellipsis_0.3.2    </code></pre>
+ [1] nlme_3.1-160       lubridate_1.9.2    bit64_4.0.5       
+ [4] RColorBrewer_1.1-3 httr_1.4.4         rprojroot_2.0.3   
+ [7] tools_4.2.2        bslib_0.4.2        utf8_1.2.3        
+[10] R6_2.5.1           DBI_1.1.3          lazyeval_0.2.2    
+[13] mgcv_1.8-41        colorspace_2.1-0   withr_2.5.0       
+[16] tidyselect_1.2.0   downlit_0.4.2      bit_4.0.5         
+[19] compiler_4.2.2     cli_3.6.0          labeling_0.4.2    
+[22] bookdown_0.32      sass_0.4.5         scales_1.2.1      
+[25] digest_0.6.31      rmarkdown_2.20     pkgconfig_2.0.3   
+[28] htmltools_0.5.4    parallelly_1.34.0  dbplyr_2.3.0      
+[31] fastmap_1.1.0      highr_0.10         htmlwidgets_1.6.1 
+[34] rlang_1.0.6        rstudioapi_0.14    RSQLite_2.3.0     
+[37] shiny_1.7.4        jquerylib_0.1.4    farver_2.1.1      
+[40] generics_0.1.3     jsonlite_1.8.4     crosstalk_1.2.0   
+[43] vroom_1.6.1        distill_1.5        Matrix_1.5-1      
+[46] Rcpp_1.0.10        munsell_0.5.0      fansi_1.0.4       
+[49] lifecycle_1.0.3    stringi_1.7.12     yaml_2.3.7        
+[52] snakecase_0.11.0   grid_4.2.2         blob_1.2.3        
+[55] listenv_0.9.0      promises_1.2.0.1   parallel_4.2.2    
+[58] crayon_1.5.2       miniUI_0.1.1.1     lattice_0.20-45   
+[61] splines_4.2.2      hms_1.1.2          knitr_1.42        
+[64] pillar_1.8.1       codetools_0.2-18   glue_1.6.2        
+[67] evaluate_0.20      data.table_1.14.8  png_0.1-8         
+[70] vctrs_0.5.2        tzdb_0.3.0         httpuv_1.6.9      
+[73] gtable_0.3.1       assertthat_0.2.1   cachem_1.0.6      
+[76] xfun_0.37          mime_0.12          xtable_1.8-4      
+[79] later_1.3.0        viridisLite_0.4.1  memoise_2.0.1     
+[82] globals_0.16.2     timechange_0.2.0   ellipsis_0.3.2    </code></pre>
 </div>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
@@ -2821,8 +2853,11 @@ loaded via a namespace (and not attached):
 <!--/radix_placeholder_appendices-->
 <!--radix_placeholder_navigation_after_body-->
 <div class="distill-site-nav distill-site-footer">
-<p>© Copyright 2021 <a href="https://github.com/storopoli/Estatistica-Bayesiana">Jose Storopoli</a>.</p>
-<p>Content licensed under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+<p>© Copyright 2021 <a
+href="https://github.com/storopoli/Linguagem-R">Jose Storopoli</a>.</p>
+<p>Content licensed under the <a
+href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA
+4.0</a>.</p>
 </div>
 <!--/radix_placeholder_navigation_after_body-->
 

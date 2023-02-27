@@ -84,6 +84,7 @@ code span.vs { color: #4e9a06; } /* VerbatimString */
 code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+
   <!--radix_placeholder_meta_tags-->
   <title>Linguagem R: Regressão Linear e Regressão Logística</title>
 
@@ -467,7 +468,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
   </style>
 
-  <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+  <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
   <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet"/>
   <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet"/>
   <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
@@ -798,6 +799,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
   d-article table.gt_table td,
   d-article table.gt_table th {
     border-bottom: none;
+    font-size: 100%;
   }
 
   .html-widget {
@@ -1039,10 +1041,6 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     position: relative;
     margin-bottom: 2.5em;
     margin-top: 1.5em;
-  }
-
-  .figure img {
-    width: 100%;
   }
 
   .figure .caption {
@@ -1874,7 +1872,22 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
       // hoverable references
       $('span.citation[data-cites]').each(function() {
-        var refHtml = $('#ref-' + $(this).attr('data-cites')).html();
+        const citeChild = $(this).children()[0]
+        // Do not process if @xyz has been used without escaping and without bibliography activated
+        // https://github.com/rstudio/distill/issues/466
+        if (citeChild === undefined) return true
+
+        if (citeChild.nodeName == "D-FOOTNOTE") {
+          var fn = citeChild
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
+        var refs = $(this).attr('data-cites').split(" ");
+        var refHtml = refs.map(function(ref) {
+          // Could use CSS.escape too here, we insure backward compatibility in navigator
+          return "<p>" + $('div[id="ref-' + ref + '"]').html() + "</p>";
+        }).join("\n");
         window.tippy(this, {
           allowHTML: true,
           content: refHtml,
@@ -1885,6 +1898,31 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
           placement: 'bottom-start'
         });
       });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
 
       // clear polling timer
       clearInterval(tid);
@@ -1984,6 +2022,8 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     // mark non-body figures created by knitr chunks as 100% width
     $('.layout-chunk').each(function(i, val) {
       var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
       if ($(this).attr('data-layout') !== "l-body") {
         figures.css('width', '100%');
       } else {
@@ -2006,7 +2046,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     // get rid of index.html references in header
     if (window.location.protocol !== "file:") {
       $('.distill-site-header a[href]').each(function(i,val) {
-        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
       });
     }
 
@@ -2355,7 +2395,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2433,29 +2473,29 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <nav class="l-text toc figcaption" id="TOC">
 <h3>Contents</h3>
 <ul>
-<li><a href="#regressão-linear">Regressão Linear</a>
+<li><a href="#regressão-linear" id="toc-regressão-linear">Regressão Linear</a>
 <ul>
-<li><a href="#interpretações">Interpretações</a></li>
-<li><a href="#interpretação-geométrica">Interpretação Geométrica</a></li>
-<li><a href="#interpretação-matemática">Interpretação Matemática</a></li>
-<li><a href="#exemplo---score-de-qi-de-crianças">Exemplo - Score de QI de crianças</a></li>
+<li><a href="#interpretações" id="toc-interpretações">Interpretações</a></li>
+<li><a href="#interpretação-geométrica" id="toc-interpretação-geométrica">Interpretação Geométrica</a></li>
+<li><a href="#interpretação-matemática" id="toc-interpretação-matemática">Interpretação Matemática</a></li>
+<li><a href="#exemplo---score-de-qi-de-crianças" id="toc-exemplo---score-de-qi-de-crianças">Exemplo - Score de QI de crianças</a></li>
 </ul></li>
-<li><a href="#regressão-logística">Regressão Logística</a>
+<li><a href="#regressão-logística" id="toc-regressão-logística">Regressão Logística</a>
 <ul>
-<li><a href="#exemplo---propensão-a-mudar-de-poço-de-água-contaminado">Exemplo - Propensão a mudar de poço de água contaminado</a></li>
+<li><a href="#exemplo---propensão-a-mudar-de-poço-de-água-contaminado" id="toc-exemplo---propensão-a-mudar-de-poço-de-água-contaminado">Exemplo - Propensão a mudar de poço de água contaminado</a></li>
 </ul></li>
-<li><a href="#regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</a>
+<li><a href="#regressão-de-poisson---dados-de-contagem" id="toc-regressão-de-poisson---dados-de-contagem">Regressão de Poisson - Dados de Contagem</a>
 <ul>
-<li><a href="#exemplo-poisson---exterminação-de-baratas">Exemplo Poisson - Exterminação de baratas</a></li>
+<li><a href="#exemplo-poisson---exterminação-de-baratas" id="toc-exemplo-poisson---exterminação-de-baratas">Exemplo Poisson - Exterminação de baratas</a></li>
 </ul></li>
-<li><a href="#como-plotar-modelos-com-o-ggeffects">Como <em>plotar</em> modelos com o <code>{ggeffects}</code></a></li>
-<li><a href="#ambiente">Ambiente</a></li>
+<li><a href="#como-plotar-modelos-com-o-ggeffects" id="toc-como-plotar-modelos-com-o-ggeffects">Como <em>plotar</em> modelos com o <code>{ggeffects}</code></a></li>
+<li><a href="#ambiente" id="toc-ambiente">Ambiente</a></li>
 </ul>
 </nav>
 </div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure" style="text-align: center"><span id="fig:stats"></span>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:stats"></span>
 <img src="images/not_normal.png" alt="Stats" width="1160" />
 <p class="caption">
 Figure 1: Stats
@@ -2475,7 +2515,7 @@ Figure 1: Stats
 <p>Imagine que seus dados são pontos que vivem em um espaço multidimensional. <strong>A regressão é uma técnica para encontrar a melhor reta<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> entre o conjunto de dados levando em conta todas as observações</strong>.</p>
 <p>Isto é valido para qualquer espaço multidimensional, até para além de 3-D. Vamos mostrar um exemplo em 2-D da relação entre <code>x</code> e <code>y</code>, mas isto poder ser estendido para a relação <code>x1</code>, <code>x2</code>, … e <code>y</code>.</p>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure"><span id="fig:regressao-reta"></span>
+<div class="figure"><span style="display:block;" id="fig:regressao-reta"></span>
 <img src="5-Regressao_files/figure-html5/regressao-reta-1.png" alt="Uma relação entre variáveis representada por uma reta de tendência" width="624" />
 <p class="caption">
 Figure 2: Uma relação entre variáveis representada por uma reta de tendência
@@ -2486,7 +2526,7 @@ Figure 2: Uma relação entre variáveis representada por uma reta de tendência
 <h3 id="interpretação-matemática">Interpretação Matemática</h3>
 <p><strong>A interpretação matemática é vista como uma otimização: encontrar a melhor reta entre os pontos que minimiza o erro quadrático médio (<em>mean squared error</em> – MSE)</strong>. Ao escolhermos a melhor reta, devemos escolher a melhor reta que minimiza as distâncias entre os pontos, sendo que podemos errar para mais ou para menos. Para evitarmos que os erros se cancelem, precisamos eliminar o sinal negativo de alguns erros e convertê-los para valores positivos. Para isso, pegamos todas os erros (diferenças entre o valor previsto pela reta e o valor verdadeiro) e elevamos ao quadrado (assim todo número negativo se tornará positivo e todo positivo se manterá positivo). Portanto, a <strong>regressão se torna a busca do menor valor de uma função erro (MSE)</strong>.</p>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure"><span id="fig:regressao-mse"></span>
+<div class="figure"><span style="display:block;" id="fig:regressao-mse"></span>
 <img src="5-Regressao_files/figure-html5/regressao-mse-1.png" alt="A melhor reta que minimiza a distância dos erros" width="624" />
 <p class="caption">
 Figure 3: A melhor reta que minimiza a distância dos erros
@@ -2506,9 +2546,8 @@ Figure 3: A melhor reta que minimiza a distância dos erros
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://readr.tidyverse.org'>readr</a></span><span class='op'>)</span>
-<span class='va'>kidiq</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/kidiq.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"_didi"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://readr.tidyverse.org'>readr</a></span><span class='op'>)</span></span>
+<span><span class='va'>kidiq</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/kidiq.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"_didi"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <h4 id="como-especificar-um-modelo-em-r-usando-a-sintaxe-de-formula">Como especificar um modelo em R usando a sintaxe de “formula”</h4>
@@ -2516,9 +2555,8 @@ Figure 3: A melhor reta que minimiza a distância dos erros
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>y <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">+</span> ...</span></code></pre></div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>kidiq_1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_1</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>kidiq_1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_1</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>
 Call:
@@ -2541,9 +2579,8 @@ F-statistic:  109 on 1 and 432 DF,  p-value: &lt;0.0000000000000002</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>kidiq_2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span> <span class='op'>+</span> <span class='va'>mom_hs</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_2</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>kidiq_2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span> <span class='op'>+</span> <span class='va'>mom_hs</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_2</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>
 Call:
@@ -2567,9 +2604,8 @@ F-statistic: 58.7 on 2 and 431 DF,  p-value: &lt;0.0000000000000002</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>kidiq_3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span> <span class='op'>*</span> <span class='va'>mom_hs</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_3</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>kidiq_3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>kid_score</span> <span class='op'>~</span> <span class='va'>mom_iq</span> <span class='op'>*</span> <span class='va'>mom_hs</span>, data <span class='op'>=</span> <span class='va'>kidiq</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>kidiq_3</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>
 Call:
@@ -2599,16 +2635,15 @@ F-statistic: 42.8 on 3 and 430 DF,  p-value: &lt;0.0000000000000002</code></pre>
 <p><strong>A função logística é uma <del>gambiarra</del> transformação que pega <em>qualquer</em> valor entre menos infinito <span class="math inline">\(-\infty\)</span> e mais infinito <span class="math inline">\(+\infty\)</span> e transforma em um valor entre 0 e 1</strong>. Veja na figura <a href="#fig:logit">4</a> uma representação gráfica da função logística.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>
-  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>10</span>, <span class='fl'>10</span>, length.out <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,
-  logit <span class='op'>=</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>logit</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
+<span>  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>10</span>, <span class='fl'>10</span>, length.out <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,</span>
+<span>  logit <span class='op'>=</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>logit</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
-<div class="figure"><span id="fig:logit"></span>
+<div class="figure"><span style="display:block;" id="fig:logit"></span>
 <img src="5-Regressao_files/figure-html5/logit-1.png" alt="Função Logística" width="624" />
 <p class="caption">
 Figure 4: Função Logística
@@ -2628,17 +2663,15 @@ Figure 4: Função Logística
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>wells</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/wells.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"iddii"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wells</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/wells.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"iddii"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>wells1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/glm.html'>glm</a></span><span class='op'>(</span><span class='va'>switch</span> <span class='op'>~</span> <span class='va'>arsenic</span> <span class='op'>+</span> <span class='va'>dist</span> <span class='op'>+</span> <span class='va'>educ</span> <span class='op'>+</span> <span class='va'>assoc</span>,
-              data <span class='op'>=</span> <span class='va'>wells</span>,
-              family <span class='op'>=</span> <span class='va'>binomial</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wells1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/glm.html'>glm</a></span><span class='op'>(</span><span class='va'>switch</span> <span class='op'>~</span> <span class='va'>arsenic</span> <span class='op'>+</span> <span class='va'>dist</span> <span class='op'>+</span> <span class='va'>educ</span> <span class='op'>+</span> <span class='va'>assoc</span>,</span>
+<span>              data <span class='op'>=</span> <span class='va'>wells</span>,</span>
+<span>              family <span class='op'>=</span> <span class='va'>binomial</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>
 Call:
@@ -2670,19 +2703,17 @@ Number of Fisher Scoring iterations: 4</code></pre>
 <p>Vamos pegar o <code>exp()</code> dos coeficientes:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>$</span><span class='va'>coefficients</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>$</span><span class='va'>coefficients</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>(Intercept)     arsenic        dist        educ       assoc 
        0.85        1.60        0.99        1.04        0.88 </code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='va'>wells</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>arsenic</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span></span>
+<span><span class='va'>wells</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>arsenic</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="5-Regressao_files/figure-html5/arsenic-1.png" width="624" /></p>
 </div>
@@ -2706,16 +2737,15 @@ y = e^{(\theta_0 + \theta_1 x_1 + \theta_2 x_2 + \dots + \theta_n x_n)}
 <p>A função <span class="math inline">\(e^x\)</span> é chamada de função exponencial. Veja a figura <a href="#fig:exponential-function">5</a> para uma intuição gráfica da função exponencial:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>
-  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>10</span>, length.out <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,
-  y <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
-  <span class='op'>)</span>,
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ylab</a></span><span class='op'>(</span><span class='st'>"Exponencial(x)"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
+<span>  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>10</span>, length.out <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,</span>
+<span>  y <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span>,</span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ylab</a></span><span class='op'>(</span><span class='st'>"Exponencial(x)"</span><span class='op'>)</span></span></code></pre>
 </div>
-<div class="figure"><span id="fig:exponential-function"></span>
+<div class="figure"><span style="display:block;" id="fig:exponential-function"></span>
 <img src="5-Regressao_files/figure-html5/exponential-function-1.png" alt="Função Exponencial" width="624" />
 <p class="caption">
 Figure 5: Função Exponencial
@@ -2735,19 +2765,17 @@ Figure 5: Função Exponencial
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>roaches</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/roaches.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"idiid"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>roaches</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"datasets/roaches.csv"</span>, col_types <span class='op'>=</span> <span class='st'>"idiid"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>roaches1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/glm.html'>glm</a></span><span class='op'>(</span>
-  <span class='va'>y</span> <span class='op'>~</span> <span class='va'>roach1</span> <span class='op'>+</span> <span class='va'>treatment</span> <span class='op'>+</span> <span class='va'>senior</span> <span class='op'>+</span> <span class='va'>exposure2</span>,
-  data <span class='op'>=</span> <span class='va'>roaches</span>,
-  family <span class='op'>=</span> <span class='va'>poisson</span>
-<span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>roaches1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/glm.html'>glm</a></span><span class='op'>(</span></span>
+<span>  <span class='va'>y</span> <span class='op'>~</span> <span class='va'>roach1</span> <span class='op'>+</span> <span class='va'>treatment</span> <span class='op'>+</span> <span class='va'>senior</span> <span class='op'>+</span> <span class='va'>exposure2</span>,</span>
+<span>  data <span class='op'>=</span> <span class='va'>roaches</span>,</span>
+<span>  family <span class='op'>=</span> <span class='va'>poisson</span></span>
+<span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>
 Call:
@@ -2779,8 +2807,7 @@ Number of Fisher Scoring iterations: 6</code></pre>
 <p>Vamos pegar o <code>exp()</code> dos coeficientes:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>$</span><span class='va'>coefficients</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>$</span><span class='va'>coefficients</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>(Intercept)      roach1   treatment      senior   exposure2 
       19.43        1.01        0.60        0.68        1.18 </code></pre>
@@ -2789,9 +2816,8 @@ Number of Fisher Scoring iterations: 6</code></pre>
 <p>Podemos usar o pacote [<code>{ggeffects}](https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html) para *plotar* objetos</code>lm<code>e</code>glm`</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://strengejacke.github.io/ggeffects/'>ggeffects</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>kidiq_3</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://strengejacke.github.io/ggeffects/'>ggeffects</a></span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>kidiq_3</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>$mom_iq</code></pre>
 <p><img src="5-Regressao_files/figure-html5/ggeffects-lm-1.png" width="624" /></p>
@@ -2801,8 +2827,7 @@ $mom_hs</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>wells1</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>$arsenic</code></pre>
 <p><img src="5-Regressao_files/figure-html5/ggeffects-glm-logit-1.png" width="624" /></p>
@@ -2818,8 +2843,7 @@ $assoc</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://strengejacke.github.io/ggeffects/reference/ggpredict.html'>ggeffect</a></span><span class='op'>(</span><span class='va'>roaches1</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <pre><code>$roach1</code></pre>
 <p><img src="5-Regressao_files/figure-html5/ggeffects-glm-poisson-1.png" width="624" /></p>
@@ -2836,70 +2860,77 @@ $exposure2</code></pre>
 <h2 id="ambiente">Ambiente</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code>R version 4.1.0 (2021-05-18)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Big Sur 11.4
+<pre><code>R version 4.2.2 (2022-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.1 LTS
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so
 
 locale:
-[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods  
 [7] base     
 
 other attached packages:
- [1] ggeffects_1.1.0   broom_0.7.8       furrr_0.2.3      
- [4] future_1.21.0     purrr_0.3.4       ggridges_0.5.3   
- [7] ggExtra_0.9       gghighlight_0.3.2 ggrepel_0.9.1    
-[10] patchwork_1.1.1   forcats_0.5.1     plotly_4.9.4.1   
-[13] repurrrsive_1.0.0 ggplot2_3.3.5     stringr_1.4.0    
-[16] tidyr_1.1.3       janitor_2.1.0     dplyr_1.0.7      
-[19] readr_1.4.0       magrittr_2.0.1    tibble_3.1.2     
+ [1] ggeffects_1.1.5   broom_1.0.3       furrr_0.3.1      
+ [4] future_1.31.0     purrr_1.0.1       ggridges_0.5.4   
+ [7] ggExtra_0.10.0    gghighlight_0.4.0 ggrepel_0.9.3    
+[10] patchwork_1.1.2   forcats_1.0.0     plotly_4.10.1    
+[13] repurrrsive_1.1.0 ggplot2_3.4.1     stringr_1.5.0    
+[16] tidyr_1.3.0       janitor_2.2.0     dplyr_1.1.0      
+[19] readr_2.1.4       magrittr_2.0.3    tibble_3.1.8     
 
 loaded via a namespace (and not attached):
- [1] nlme_3.1-152       lubridate_1.7.10   bit64_4.0.5       
- [4] insight_0.14.2     RColorBrewer_1.1-2 httr_1.4.2        
- [7] rprojroot_2.0.2    backports_1.2.1    tools_4.1.0       
-[10] bslib_0.2.5.1      sjlabelled_1.1.8   utf8_1.2.1        
-[13] R6_2.5.0           DBI_1.1.1          lazyeval_0.2.2    
-[16] mgcv_1.8-35        colorspace_2.0-2   withr_2.4.2       
-[19] tidyselect_1.1.1   downlit_0.2.1      bit_4.0.4         
-[22] compiler_4.1.0     textshaping_0.3.5  cli_3.0.0         
-[25] labeling_0.4.2     bookdown_0.22      sass_0.4.0        
-[28] scales_1.1.1       systemfonts_1.0.2  digest_0.6.27     
-[31] rmarkdown_2.9      jpeg_0.1-8.1       pkgconfig_2.0.3   
-[34] htmltools_0.5.1.1  parallelly_1.26.1  dbplyr_2.1.1      
-[37] fastmap_1.1.0      highr_0.9          htmlwidgets_1.5.3 
-[40] rlang_0.4.11       rstudioapi_0.13    RSQLite_2.2.7     
-[43] shiny_1.6.0        jquerylib_0.1.4    farver_2.1.0      
-[46] generics_0.1.0     jsonlite_1.7.2     crosstalk_1.1.1   
-[49] distill_1.2        Matrix_1.3-4       Rcpp_1.0.6        
-[52] munsell_0.5.0      fansi_0.5.0        lifecycle_1.0.0   
-[55] stringi_1.6.2      yaml_2.2.1         snakecase_0.11.0  
-[58] plyr_1.8.6         grid_4.1.0         blob_1.2.1        
-[61] parallel_4.1.0     listenv_0.8.0      promises_1.2.0.1  
-[64] crayon_1.4.1       miniUI_0.1.1.1     lattice_0.20-44   
-[67] splines_4.1.0      hms_1.1.0          knitr_1.33        
-[70] pillar_1.6.1       codetools_0.2-18   glue_1.4.2        
-[73] evaluate_0.14      data.table_1.14.0  httpuv_1.6.1      
-[76] png_0.1-7          vctrs_0.3.8        gtable_0.3.0      
-[79] assertthat_0.2.1   cachem_1.0.5       xfun_0.24         
-[82] mime_0.11          xtable_1.8-4       later_1.2.0       
-[85] ragg_1.1.3         viridisLite_0.4.0  memoise_2.0.0     
-[88] globals_0.14.0     ellipsis_0.3.2    </code></pre>
+ [1] minqa_1.2.5        colorspace_2.1-0   ellipsis_0.3.2    
+ [4] rprojroot_2.0.3    estimability_1.4.1 snakecase_0.11.0  
+ [7] rstudioapi_0.14    listenv_0.9.0      farver_2.1.1      
+[10] bit64_4.0.5        fansi_1.0.4        lubridate_1.9.2   
+[13] codetools_0.2-18   splines_4.2.2      downlit_0.4.2     
+[16] cachem_1.0.6       knitr_1.42         effects_4.2-2     
+[19] jsonlite_1.8.4     nloptr_2.0.3       dbplyr_2.3.0      
+[22] png_0.1-8          shiny_1.7.4        compiler_4.2.2    
+[25] httr_1.4.4         backports_1.4.1    assertthat_0.2.1  
+[28] Matrix_1.5-1       fastmap_1.1.0      lazyeval_0.2.2    
+[31] survey_4.1-1       cli_3.6.0          later_1.3.0       
+[34] htmltools_0.5.4    tools_4.2.2        gtable_0.3.1      
+[37] glue_1.6.2         Rcpp_1.0.10        carData_3.0-5     
+[40] jquerylib_0.1.4    vctrs_0.5.2        nlme_3.1-160      
+[43] crosstalk_1.2.0    insight_0.19.0     xfun_0.37         
+[46] globals_0.16.2     lme4_1.1-31        timechange_0.2.0  
+[49] mime_0.12          miniUI_0.1.1.1     lifecycle_1.0.3   
+[52] MASS_7.3-58.1      scales_1.2.1       vroom_1.6.1       
+[55] hms_1.1.2          promises_1.2.0.1   parallel_4.2.2    
+[58] RColorBrewer_1.1-3 yaml_2.3.7         memoise_2.0.1     
+[61] sass_0.4.5         distill_1.5        stringi_1.7.12    
+[64] RSQLite_2.3.0      highr_0.10         boot_1.3-28       
+[67] rlang_1.0.6        pkgconfig_2.0.3    evaluate_0.20     
+[70] lattice_0.20-45    htmlwidgets_1.6.1  labeling_0.4.2    
+[73] bit_4.0.5          tidyselect_1.2.0   parallelly_1.34.0 
+[76] bookdown_0.32      R6_2.5.1           generics_0.1.3    
+[79] DBI_1.1.3          pillar_1.8.1       withr_2.5.0       
+[82] mgcv_1.8-41        survival_3.4-0     nnet_7.3-18       
+[85] crayon_1.5.2       utf8_1.2.3         tzdb_0.3.0        
+[88] rmarkdown_2.20     grid_4.2.2         data.table_1.14.8 
+[91] blob_1.2.3         digest_0.6.31      xtable_1.8-4      
+[94] httpuv_1.6.9       munsell_0.5.0      viridisLite_0.4.1 
+[97] bslib_0.4.2        mitools_2.4       </code></pre>
 </div>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
-<section class="footnotes" role="doc-endnotes">
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>tecnicamente reta aqui se refere um hiperplano que é subespaço de dimensão <span class="math inline">\(n-1\)</span> de um espaço de dimensão <span class="math inline">\(n\)</span>. Por exemplo, uma reta é um hiperplano 1-D de uma plano 2-D; um plano 2-D é um hiperplano de um plano 3-D; e assim por diante…<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>tecnicamente reta aqui se refere um hiperplano que é subespaço de dimensão <span class="math inline">\(n-1\)</span> de um espaço de dimensão <span class="math inline">\(n\)</span>. Por exemplo, uma reta é um hiperplano 1-D de uma plano 2-D; um plano 2-D é um hiperplano de um plano 3-D; e assim por diante…<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 <!--radix_placeholder_article_footer-->
@@ -2941,8 +2972,11 @@ loaded via a namespace (and not attached):
 <!--/radix_placeholder_appendices-->
 <!--radix_placeholder_navigation_after_body-->
 <div class="distill-site-nav distill-site-footer">
-<p>© Copyright 2021 <a href="https://github.com/storopoli/Estatistica-Bayesiana">Jose Storopoli</a>.</p>
-<p>Content licensed under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+<p>© Copyright 2021 <a
+href="https://github.com/storopoli/Linguagem-R">Jose Storopoli</a>.</p>
+<p>Content licensed under the <a
+href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA
+4.0</a>.</p>
 </div>
 <!--/radix_placeholder_navigation_after_body-->
 

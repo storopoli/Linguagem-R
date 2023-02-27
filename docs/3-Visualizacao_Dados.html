@@ -84,6 +84,7 @@ code span.vs { color: #4e9a06; } /* VerbatimString */
 code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+
   <!--radix_placeholder_meta_tags-->
   <title>Linguagem R: Visualização de Dados</title>
 
@@ -467,7 +468,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
   </style>
 
-  <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+  <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
   <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet"/>
   <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet"/>
   <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
@@ -798,6 +799,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
   d-article table.gt_table td,
   d-article table.gt_table th {
     border-bottom: none;
+    font-size: 100%;
   }
 
   .html-widget {
@@ -1039,10 +1041,6 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     position: relative;
     margin-bottom: 2.5em;
     margin-top: 1.5em;
-  }
-
-  .figure img {
-    width: 100%;
   }
 
   .figure .caption {
@@ -1874,7 +1872,22 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
       // hoverable references
       $('span.citation[data-cites]').each(function() {
-        var refHtml = $('#ref-' + $(this).attr('data-cites')).html();
+        const citeChild = $(this).children()[0]
+        // Do not process if @xyz has been used without escaping and without bibliography activated
+        // https://github.com/rstudio/distill/issues/466
+        if (citeChild === undefined) return true
+
+        if (citeChild.nodeName == "D-FOOTNOTE") {
+          var fn = citeChild
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
+        var refs = $(this).attr('data-cites').split(" ");
+        var refHtml = refs.map(function(ref) {
+          // Could use CSS.escape too here, we insure backward compatibility in navigator
+          return "<p>" + $('div[id="ref-' + ref + '"]').html() + "</p>";
+        }).join("\n");
         window.tippy(this, {
           allowHTML: true,
           content: refHtml,
@@ -1885,6 +1898,31 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
           placement: 'bottom-start'
         });
       });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
 
       // clear polling timer
       clearInterval(tid);
@@ -1984,6 +2022,8 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     // mark non-body figures created by knitr chunks as 100% width
     $('.layout-chunk').each(function(i, val) {
       var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
       if ($(this).attr('data-layout') !== "l-body") {
         figures.css('width', '100%');
       } else {
@@ -2006,7 +2046,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     // get rid of index.html references in header
     if (window.location.protocol !== "file:") {
       $('.distill-site-header a[href]').each(function(i,val) {
-        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
       });
     }
 
@@ -2355,15 +2395,15 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
-  <script src="site_libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
-  <script src="site_libs/plotly-binding-4.9.4.1/plotly.js"></script>
+  <script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
+  <script src="site_libs/htmlwidgets-1.6.1/htmlwidgets.js"></script>
+  <script src="site_libs/plotly-binding-4.10.1/plotly.js"></script>
   <script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
   <script src="site_libs/jquery-3.5.1/jquery.min.js"></script>
-  <link href="site_libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
-  <script src="site_libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
-  <link href="site_libs/plotly-htmlwidgets-css-1.57.1/plotly-htmlwidgets.css" rel="stylesheet" />
-  <script src="site_libs/plotly-main-1.57.1/plotly-latest.min.js"></script>
+  <link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+  <script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+  <link href="site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+  <script src="site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2441,27 +2481,27 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <nav class="l-text toc figcaption" id="TOC">
 <h3>Contents</h3>
 <ul>
-<li><a href="#como-usar">Como usar?</a></li>
-<li><a href="#geom"><code>Geom</code></a></li>
-<li><a href="#estéticas-com-aes">Estéticas com <code>aes()</code></a>
+<li><a href="#como-usar" id="toc-como-usar">Como usar?</a></li>
+<li><a href="#geom" id="toc-geom"><code>Geom</code></a></li>
+<li><a href="#estéticas-com-aes" id="toc-estéticas-com-aes">Estéticas com <code>aes()</code></a>
 <ul>
-<li><a href="#atributos-dentro-e-fora-do-aes">Atributos dentro e fora do <code>aes()</code></a></li>
+<li><a href="#atributos-dentro-e-fora-do-aes" id="toc-atributos-dentro-e-fora-do-aes">Atributos dentro e fora do <code>aes()</code></a></li>
 </ul></li>
-<li><a href="#rótulos-com-labs">Rótulos com <code>labs()</code></a></li>
-<li><a href="#facetação-com-facet_wrap">Facetação com <code>facet_wrap()</code></a></li>
-<li><a href="#customização-de-temas-com-theme">Customização de Temas com <code>theme()</code></a></li>
-<li><a href="#escalas-com-o-scale__">Escalas com o <code>scale_*_*()</code></a></li>
-<li><a href="#mais-escalas-com-o-scales">Mais escalas com o <code>{scales}</code></a></li>
-<li><a href="#como-é-que-salva-ggsave">“Como é que salva?” <code>ggsave()</code></a></li>
-<li><a href="#compor-múltiplos-gráficos-com-patchwork">Compor múltiplos gráficos com <code>{patchwork}</code></a></li>
-<li><a href="#free-samples"><em>Free Samples</em></a></li>
-<li><a href="#ambiente">Ambiente</a></li>
+<li><a href="#rótulos-com-labs" id="toc-rótulos-com-labs">Rótulos com <code>labs()</code></a></li>
+<li><a href="#facetação-com-facet_wrap" id="toc-facetação-com-facet_wrap">Facetação com <code>facet_wrap()</code></a></li>
+<li><a href="#customização-de-temas-com-theme" id="toc-customização-de-temas-com-theme">Customização de Temas com <code>theme()</code></a></li>
+<li><a href="#escalas-com-o-scale__" id="toc-escalas-com-o-scale__">Escalas com o <code>scale_*_*()</code></a></li>
+<li><a href="#mais-escalas-com-o-scales" id="toc-mais-escalas-com-o-scales">Mais escalas com o <code>{scales}</code></a></li>
+<li><a href="#como-é-que-salva-ggsave" id="toc-como-é-que-salva-ggsave">“Como é que salva?” <code>ggsave()</code></a></li>
+<li><a href="#compor-múltiplos-gráficos-com-patchwork" id="toc-compor-múltiplos-gráficos-com-patchwork">Compor múltiplos gráficos com <code>{patchwork}</code></a></li>
+<li><a href="#free-samples" id="toc-free-samples"><em>Free Samples</em></a></li>
+<li><a href="#ambiente" id="toc-ambiente">Ambiente</a></li>
 </ul>
 </nav>
 </div>
 <p><link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"/></p>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure" style="text-align: center"><span id="fig:ggplot2"></span>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:ggplot2"></span>
 <img src="images/ggplot2_obra_prima_pt.png" alt="Crie sua Obra-Prima!" width="1128" />
 <p class="caption">
 Figure 1: Crie sua Obra-Prima!
@@ -2471,7 +2511,7 @@ Figure 1: Crie sua Obra-Prima!
 <p><a href="https://ggplot2.tidyverse.org/"><code>{ggplot2}</code></a> é um sistema para a criação declarativa de gráficos, baseado na <a href="https://amzn.to/2ef1eWp">Gramática dos Gráficos</a>–um esquema geral para visualização de dados que divide os gráficos em componentes semânticos, como escalas e camadas. Você fornece os dados, diz ao <code>{ggplot2}</code> como mapear as variáveis para as estéticas, quais primitivos gráficos usar e ele cuida dos detalhes.</p>
 <p>Um livro muito bom sobre visualização de dados é o <a href="https://clauswilke.com/dataviz/">“Fundamentals of Data Visualizations” de Claus Wilke</a> (Figura <a href="#fig:fundamentals-wilke">2</a>). Um segredinho, ele foi todo feito em <a href="https://github.com/clauswilke/dataviz"><code>Rmarkdown</code> e <code>ggplot2</code></a> #ficaadica.</p>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure" style="text-align: center"><span id="fig:fundamentals-wilke"></span>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:fundamentals-wilke"></span>
 <img src="images/fundamentals-wilke.png" alt="Fundamentals of Data Visualization" width="304" />
 <p class="caption">
 Figure 2: Fundamentals of Data Visualization
@@ -2487,50 +2527,48 @@ Figure 2: Fundamentals of Data Visualization
 </ol>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span> <span class='co'># `require(ggplot2)` também serve 99.99% usam `library()`</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
-<span class='va'>mpg</span> <span class='op'>%&gt;%</span> <span class='co'># igual a isso `ggplot(data = mpg)`</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span> <span class='co'># `require(ggplot2)` também serve 99.99% usam `library()`</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span></span>
+<span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># igual a isso `ggplot(data = mpg)`</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggplot-data-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggplot-aes-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggplot-geom-1.png" width="624" /></p>
 </div>
 <blockquote>
-<p>OBS: Porque <code>+</code> e não o <em>pipe</em> <code>%&gt;%</code>? Lembra que eu falei que <code>{ggplot2}</code> veio antes do <code>{tidyverse}</code> e antes do Hadley trabalhar totalmente com <em>opensource</em> na RStudio? Então os <code>geom_*()</code> vieram antes do <em>pipe</em> <code>%&gt;%</code>. Por isso a API <strong>adiciona</strong> camadas. Então usamos o <code>+</code>.</p>
+<p>OBS: Porque <code>+</code> e não o <em>pipe</em> <code>%&gt;%</code>?
+Lembra que eu falei que <code>{ggplot2}</code> veio antes do <code>{tidyverse}</code> e antes do Hadley trabalhar totalmente com <em>opensource</em> na RStudio? Então os <code>geom_*()</code> vieram antes do <em>pipe</em> <code>%&gt;%</code>. Por isso a API <strong>adiciona</strong> camadas. Então usamos o <code>+</code>.</p>
 </blockquote>
 <blockquote>
-<p>Pergunta: Quero interatividade?! E agora? Resposta: Não tema! Use o <code>{plotly}</code> e seja feliz!</p>
+<p>Pergunta: Quero interatividade?! E agora?
+Resposta: Não tema! Use o <code>{plotly}</code> e seja feliz!</p>
 </blockquote>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://plotly-r.com'>plotly</a></span><span class='op'>)</span>
-<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span><span class='op'>)</span>
-<span class='fu'><a href='https://docs.ropensci.org/plotly/reference/ggplotly.html'>ggplotly</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://plotly-r.com'>plotly</a></span><span class='op'>)</span></span>
+<span><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/pkg/plotly/man/ggplotly.html'>ggplotly</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span></span></code></pre>
 </div>
-<div id="htmlwidget-0650f9b217de7b5e8fa8" style="width:624px;height:384px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0650f9b217de7b5e8fa8">{"x":{"data":[{"x":[29,29,31,30,26,26,27,26,25,28,27,25,25,25,25,24,25,23,20,15,20,17,17,26,23,26,25,24,19,14,15,17,27,30,26,29,26,24,24,22,22,24,24,17,22,21,23,23,19,18,17,17,19,19,12,17,15,17,17,12,17,16,18,15,16,12,17,17,16,12,15,16,17,15,17,17,18,17,19,17,19,19,17,17,17,16,16,17,15,17,26,25,26,24,21,22,23,22,20,33,32,32,29,32,34,36,36,29,26,27,30,31,26,26,28,26,29,28,27,24,24,24,22,19,20,17,12,19,18,14,15,18,18,15,17,16,18,17,19,19,17,29,27,31,32,27,26,26,25,25,17,17,20,18,26,26,27,28,25,25,24,27,25,26,23,26,26,26,26,25,27,25,27,20,20,19,17,20,17,29,27,31,31,26,26,28,27,29,31,31,26,26,27,30,33,35,37,35,15,18,20,20,22,17,19,18,20,29,26,29,29,24,44,29,26,29,29,29,29,23,24,44,41,29,26,28,29,29,29,28,29,26,26,26],"y":[18,21,20,21,16,18,18,18,16,20,19,15,17,17,15,15,17,16,14,11,14,13,12,16,15,16,15,15,14,11,11,14,19,22,18,18,17,18,17,16,16,17,17,11,15,15,16,16,15,14,13,14,14,14,9,11,11,13,13,9,13,11,13,11,12,9,13,13,12,9,11,11,13,11,11,11,12,14,15,14,13,13,13,14,14,13,13,13,11,13,18,18,17,16,15,15,15,15,14,28,24,25,23,24,26,25,24,21,18,18,21,21,18,18,19,19,19,20,20,17,16,17,17,15,15,14,9,14,13,11,11,12,12,11,11,11,12,14,13,13,13,21,19,23,23,19,19,18,19,19,14,15,14,12,18,16,17,18,16,18,18,20,19,20,18,21,19,19,19,20,20,19,20,15,16,15,15,16,14,21,21,21,21,18,18,19,21,21,21,22,18,18,18,24,24,26,28,26,11,13,15,16,17,15,15,15,16,21,19,21,22,17,33,21,19,22,21,21,21,16,17,35,29,21,19,20,20,21,18,19,21,16,18,17],"text":["hwy: 29<br />cty: 18","hwy: 29<br />cty: 21","hwy: 31<br />cty: 20","hwy: 30<br />cty: 21","hwy: 26<br />cty: 16","hwy: 26<br />cty: 18","hwy: 27<br />cty: 18","hwy: 26<br />cty: 18","hwy: 25<br />cty: 16","hwy: 28<br />cty: 20","hwy: 27<br />cty: 19","hwy: 25<br />cty: 15","hwy: 25<br />cty: 17","hwy: 25<br />cty: 17","hwy: 25<br />cty: 15","hwy: 24<br />cty: 15","hwy: 25<br />cty: 17","hwy: 23<br />cty: 16","hwy: 20<br />cty: 14","hwy: 15<br />cty: 11","hwy: 20<br />cty: 14","hwy: 17<br />cty: 13","hwy: 17<br />cty: 12","hwy: 26<br />cty: 16","hwy: 23<br />cty: 15","hwy: 26<br />cty: 16","hwy: 25<br />cty: 15","hwy: 24<br />cty: 15","hwy: 19<br />cty: 14","hwy: 14<br />cty: 11","hwy: 15<br />cty: 11","hwy: 17<br />cty: 14","hwy: 27<br />cty: 19","hwy: 30<br />cty: 22","hwy: 26<br />cty: 18","hwy: 29<br />cty: 18","hwy: 26<br />cty: 17","hwy: 24<br />cty: 18","hwy: 24<br />cty: 17","hwy: 22<br />cty: 16","hwy: 22<br />cty: 16","hwy: 24<br />cty: 17","hwy: 24<br />cty: 17","hwy: 17<br />cty: 11","hwy: 22<br />cty: 15","hwy: 21<br />cty: 15","hwy: 23<br />cty: 16","hwy: 23<br />cty: 16","hwy: 19<br />cty: 15","hwy: 18<br />cty: 14","hwy: 17<br />cty: 13","hwy: 17<br />cty: 14","hwy: 19<br />cty: 14","hwy: 19<br />cty: 14","hwy: 12<br />cty:  9","hwy: 17<br />cty: 11","hwy: 15<br />cty: 11","hwy: 17<br />cty: 13","hwy: 17<br />cty: 13","hwy: 12<br />cty:  9","hwy: 17<br />cty: 13","hwy: 16<br />cty: 11","hwy: 18<br />cty: 13","hwy: 15<br />cty: 11","hwy: 16<br />cty: 12","hwy: 12<br />cty:  9","hwy: 17<br />cty: 13","hwy: 17<br />cty: 13","hwy: 16<br />cty: 12","hwy: 12<br />cty:  9","hwy: 15<br />cty: 11","hwy: 16<br />cty: 11","hwy: 17<br />cty: 13","hwy: 15<br />cty: 11","hwy: 17<br />cty: 11","hwy: 17<br />cty: 11","hwy: 18<br />cty: 12","hwy: 17<br />cty: 14","hwy: 19<br />cty: 15","hwy: 17<br />cty: 14","hwy: 19<br />cty: 13","hwy: 19<br />cty: 13","hwy: 17<br />cty: 13","hwy: 17<br />cty: 14","hwy: 17<br />cty: 14","hwy: 16<br />cty: 13","hwy: 16<br />cty: 13","hwy: 17<br />cty: 13","hwy: 15<br />cty: 11","hwy: 17<br />cty: 13","hwy: 26<br />cty: 18","hwy: 25<br />cty: 18","hwy: 26<br />cty: 17","hwy: 24<br />cty: 16","hwy: 21<br />cty: 15","hwy: 22<br />cty: 15","hwy: 23<br />cty: 15","hwy: 22<br />cty: 15","hwy: 20<br />cty: 14","hwy: 33<br />cty: 28","hwy: 32<br />cty: 24","hwy: 32<br />cty: 25","hwy: 29<br />cty: 23","hwy: 32<br />cty: 24","hwy: 34<br />cty: 26","hwy: 36<br />cty: 25","hwy: 36<br />cty: 24","hwy: 29<br />cty: 21","hwy: 26<br />cty: 18","hwy: 27<br />cty: 18","hwy: 30<br />cty: 21","hwy: 31<br />cty: 21","hwy: 26<br />cty: 18","hwy: 26<br />cty: 18","hwy: 28<br />cty: 19","hwy: 26<br />cty: 19","hwy: 29<br />cty: 19","hwy: 28<br />cty: 20","hwy: 27<br />cty: 20","hwy: 24<br />cty: 17","hwy: 24<br />cty: 16","hwy: 24<br />cty: 17","hwy: 22<br />cty: 17","hwy: 19<br />cty: 15","hwy: 20<br />cty: 15","hwy: 17<br />cty: 14","hwy: 12<br />cty:  9","hwy: 19<br />cty: 14","hwy: 18<br />cty: 13","hwy: 14<br />cty: 11","hwy: 15<br />cty: 11","hwy: 18<br />cty: 12","hwy: 18<br />cty: 12","hwy: 15<br />cty: 11","hwy: 17<br />cty: 11","hwy: 16<br />cty: 11","hwy: 18<br />cty: 12","hwy: 17<br />cty: 14","hwy: 19<br />cty: 13","hwy: 19<br />cty: 13","hwy: 17<br />cty: 13","hwy: 29<br />cty: 21","hwy: 27<br />cty: 19","hwy: 31<br />cty: 23","hwy: 32<br />cty: 23","hwy: 27<br />cty: 19","hwy: 26<br />cty: 19","hwy: 26<br />cty: 18","hwy: 25<br />cty: 19","hwy: 25<br />cty: 19","hwy: 17<br />cty: 14","hwy: 17<br />cty: 15","hwy: 20<br />cty: 14","hwy: 18<br />cty: 12","hwy: 26<br />cty: 18","hwy: 26<br />cty: 16","hwy: 27<br />cty: 17","hwy: 28<br />cty: 18","hwy: 25<br />cty: 16","hwy: 25<br />cty: 18","hwy: 24<br />cty: 18","hwy: 27<br />cty: 20","hwy: 25<br />cty: 19","hwy: 26<br />cty: 20","hwy: 23<br />cty: 18","hwy: 26<br />cty: 21","hwy: 26<br />cty: 19","hwy: 26<br />cty: 19","hwy: 26<br />cty: 19","hwy: 25<br />cty: 20","hwy: 27<br />cty: 20","hwy: 25<br />cty: 19","hwy: 27<br />cty: 20","hwy: 20<br />cty: 15","hwy: 20<br />cty: 16","hwy: 19<br />cty: 15","hwy: 17<br />cty: 15","hwy: 20<br />cty: 16","hwy: 17<br />cty: 14","hwy: 29<br />cty: 21","hwy: 27<br />cty: 21","hwy: 31<br />cty: 21","hwy: 31<br />cty: 21","hwy: 26<br />cty: 18","hwy: 26<br />cty: 18","hwy: 28<br />cty: 19","hwy: 27<br />cty: 21","hwy: 29<br />cty: 21","hwy: 31<br />cty: 21","hwy: 31<br />cty: 22","hwy: 26<br />cty: 18","hwy: 26<br />cty: 18","hwy: 27<br />cty: 18","hwy: 30<br />cty: 24","hwy: 33<br />cty: 24","hwy: 35<br />cty: 26","hwy: 37<br />cty: 28","hwy: 35<br />cty: 26","hwy: 15<br />cty: 11","hwy: 18<br />cty: 13","hwy: 20<br />cty: 15","hwy: 20<br />cty: 16","hwy: 22<br />cty: 17","hwy: 17<br />cty: 15","hwy: 19<br />cty: 15","hwy: 18<br />cty: 15","hwy: 20<br />cty: 16","hwy: 29<br />cty: 21","hwy: 26<br />cty: 19","hwy: 29<br />cty: 21","hwy: 29<br />cty: 22","hwy: 24<br />cty: 17","hwy: 44<br />cty: 33","hwy: 29<br />cty: 21","hwy: 26<br />cty: 19","hwy: 29<br />cty: 22","hwy: 29<br />cty: 21","hwy: 29<br />cty: 21","hwy: 29<br />cty: 21","hwy: 23<br />cty: 16","hwy: 24<br />cty: 17","hwy: 44<br />cty: 35","hwy: 41<br />cty: 29","hwy: 29<br />cty: 21","hwy: 26<br />cty: 19","hwy: 28<br />cty: 20","hwy: 29<br />cty: 20","hwy: 29<br />cty: 21","hwy: 29<br />cty: 18","hwy: 28<br />cty: 19","hwy: 29<br />cty: 21","hwy: 26<br />cty: 16","hwy: 26<br />cty: 18","hwy: 26<br />cty: 17"],"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,0,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)"}},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[12,12.4050632911392,12.8101265822785,13.2151898734177,13.620253164557,14.0253164556962,14.4303797468354,14.8354430379747,15.2405063291139,15.6455696202532,16.0506329113924,16.4556962025316,16.8607594936709,17.2658227848101,17.6708860759494,18.0759493670886,18.4810126582278,18.8860759493671,19.2911392405063,19.6962025316456,20.1012658227848,20.506329113924,20.9113924050633,21.3164556962025,21.7215189873418,22.126582278481,22.5316455696203,22.9367088607595,23.3417721518987,23.746835443038,24.1518987341772,24.5569620253165,24.9620253164557,25.3670886075949,25.7721518987342,26.1772151898734,26.5822784810127,26.9873417721519,27.3924050632911,27.7974683544304,28.2025316455696,28.6075949367089,29.0126582278481,29.4177215189873,29.8227848101266,30.2278481012658,30.6329113924051,31.0379746835443,31.4430379746835,31.8481012658228,32.253164556962,32.6582278481013,33.0632911392405,33.4683544303797,33.873417721519,34.2784810126582,34.6835443037975,35.0886075949367,35.4936708860759,35.8987341772152,36.3037974683544,36.7088607594937,37.1139240506329,37.5189873417722,37.9240506329114,38.3291139240506,38.7341772151899,39.1392405063291,39.5443037974684,39.9493670886076,40.3544303797468,40.7594936708861,41.1645569620253,41.5696202531646,41.9746835443038,42.379746835443,42.7848101265823,43.1898734177215,43.5949367088608,44],"y":[9.04283093208308,9.31957791401809,9.5963248959531,9.87307187788811,10.1498188598231,10.4265658417581,10.7033128236931,10.9800598056282,11.2568067875632,11.5335537694982,11.8103007514332,12.0870477333682,12.3637947153032,12.6405416972382,12.9172886791732,13.1940356611082,13.4707826430433,13.7475296249783,14.0242766069133,14.3010235888483,14.5777705707833,14.8545175527183,15.1312645346533,15.4080115165883,15.6847584985234,15.9615054804584,16.2382524623934,16.5149994443284,16.7917464262634,17.0684934081984,17.3452403901334,17.6219873720684,17.8987343540034,18.1754813359385,18.4522283178735,18.7289752998085,19.0057222817435,19.2824692636785,19.5592162456135,19.8359632275485,20.1127102094835,20.3894571914185,20.6662041733536,20.9429511552886,21.2196981372236,21.4964451191586,21.7731921010936,22.0499390830286,22.3266860649636,22.6034330468986,22.8801800288337,23.1569270107687,23.4336739927037,23.7104209746387,23.9871679565737,24.2639149385087,24.5406619204437,24.8174089023787,25.0941558843137,25.3709028662488,25.6476498481838,25.9243968301188,26.2011438120538,26.4778907939888,26.7546377759238,27.0313847578588,27.3081317397938,27.5848787217288,27.8616257036639,28.1383726855989,28.4151196675339,28.6918666494689,28.9686136314039,29.2453606133389,29.5221075952739,29.7988545772089,30.075601559144,30.352348541079,30.629095523014,30.905842504949],"text":["hwy: 12<br />cty:  9.0","hwy: 12<br />cty:  9.3","hwy: 13<br />cty:  9.6","hwy: 13<br />cty:  9.9","hwy: 14<br />cty: 10.1","hwy: 14<br />cty: 10.4","hwy: 14<br />cty: 10.7","hwy: 15<br />cty: 11.0","hwy: 15<br />cty: 11.3","hwy: 16<br />cty: 11.5","hwy: 16<br />cty: 11.8","hwy: 16<br />cty: 12.1","hwy: 17<br />cty: 12.4","hwy: 17<br />cty: 12.6","hwy: 18<br />cty: 12.9","hwy: 18<br />cty: 13.2","hwy: 18<br />cty: 13.5","hwy: 19<br />cty: 13.7","hwy: 19<br />cty: 14.0","hwy: 20<br />cty: 14.3","hwy: 20<br />cty: 14.6","hwy: 21<br />cty: 14.9","hwy: 21<br />cty: 15.1","hwy: 21<br />cty: 15.4","hwy: 22<br />cty: 15.7","hwy: 22<br />cty: 16.0","hwy: 23<br />cty: 16.2","hwy: 23<br />cty: 16.5","hwy: 23<br />cty: 16.8","hwy: 24<br />cty: 17.1","hwy: 24<br />cty: 17.3","hwy: 25<br />cty: 17.6","hwy: 25<br />cty: 17.9","hwy: 25<br />cty: 18.2","hwy: 26<br />cty: 18.5","hwy: 26<br />cty: 18.7","hwy: 27<br />cty: 19.0","hwy: 27<br />cty: 19.3","hwy: 27<br />cty: 19.6","hwy: 28<br />cty: 19.8","hwy: 28<br />cty: 20.1","hwy: 29<br />cty: 20.4","hwy: 29<br />cty: 20.7","hwy: 29<br />cty: 20.9","hwy: 30<br />cty: 21.2","hwy: 30<br />cty: 21.5","hwy: 31<br />cty: 21.8","hwy: 31<br />cty: 22.0","hwy: 31<br />cty: 22.3","hwy: 32<br />cty: 22.6","hwy: 32<br />cty: 22.9","hwy: 33<br />cty: 23.2","hwy: 33<br />cty: 23.4","hwy: 33<br />cty: 23.7","hwy: 34<br />cty: 24.0","hwy: 34<br />cty: 24.3","hwy: 35<br />cty: 24.5","hwy: 35<br />cty: 24.8","hwy: 35<br />cty: 25.1","hwy: 36<br />cty: 25.4","hwy: 36<br />cty: 25.6","hwy: 37<br />cty: 25.9","hwy: 37<br />cty: 26.2","hwy: 38<br />cty: 26.5","hwy: 38<br />cty: 26.8","hwy: 38<br />cty: 27.0","hwy: 39<br />cty: 27.3","hwy: 39<br />cty: 27.6","hwy: 40<br />cty: 27.9","hwy: 40<br />cty: 28.1","hwy: 40<br />cty: 28.4","hwy: 41<br />cty: 28.7","hwy: 41<br />cty: 29.0","hwy: 42<br />cty: 29.2","hwy: 42<br />cty: 29.5","hwy: 42<br />cty: 29.8","hwy: 43<br />cty: 30.1","hwy: 43<br />cty: 30.4","hwy: 44<br />cty: 30.6","hwy: 44<br />cty: 30.9"],"type":"scatter","mode":"lines","name":"fitted values","line":{"width":3.77952755905512,"color":"rgba(51,102,255,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[12,12.4050632911392,12.8101265822785,13.2151898734177,13.620253164557,14.0253164556962,14.4303797468354,14.8354430379747,15.2405063291139,15.6455696202532,16.0506329113924,16.4556962025316,16.8607594936709,17.2658227848101,17.6708860759494,18.0759493670886,18.4810126582278,18.8860759493671,19.2911392405063,19.6962025316456,20.1012658227848,20.506329113924,20.9113924050633,21.3164556962025,21.7215189873418,22.126582278481,22.5316455696203,22.9367088607595,23.3417721518987,23.746835443038,24.1518987341772,24.5569620253165,24.9620253164557,25.3670886075949,25.7721518987342,26.1772151898734,26.5822784810127,26.9873417721519,27.3924050632911,27.7974683544304,28.2025316455696,28.6075949367089,29.0126582278481,29.4177215189873,29.8227848101266,30.2278481012658,30.6329113924051,31.0379746835443,31.4430379746835,31.8481012658228,32.253164556962,32.6582278481013,33.0632911392405,33.4683544303797,33.873417721519,34.2784810126582,34.6835443037975,35.0886075949367,35.4936708860759,35.8987341772152,36.3037974683544,36.7088607594937,37.1139240506329,37.5189873417722,37.9240506329114,38.3291139240506,38.7341772151899,39.1392405063291,39.5443037974684,39.9493670886076,40.3544303797468,40.7594936708861,41.1645569620253,41.5696202531646,41.9746835443038,42.379746835443,42.7848101265823,43.1898734177215,43.5949367088608,44,44,44,43.5949367088608,43.1898734177215,42.7848101265823,42.379746835443,41.9746835443038,41.5696202531646,41.1645569620253,40.7594936708861,40.3544303797468,39.9493670886076,39.5443037974684,39.1392405063291,38.7341772151899,38.3291139240506,37.9240506329114,37.5189873417722,37.1139240506329,36.7088607594937,36.3037974683544,35.8987341772152,35.4936708860759,35.0886075949367,34.6835443037975,34.2784810126582,33.873417721519,33.4683544303797,33.0632911392405,32.6582278481013,32.253164556962,31.8481012658228,31.4430379746835,31.0379746835443,30.6329113924051,30.2278481012658,29.8227848101266,29.4177215189873,29.0126582278481,28.6075949367089,28.2025316455696,27.7974683544304,27.3924050632911,26.9873417721519,26.5822784810127,26.1772151898734,25.7721518987342,25.3670886075949,24.9620253164557,24.5569620253165,24.1518987341772,23.746835443038,23.3417721518987,22.9367088607595,22.5316455696203,22.126582278481,21.7215189873418,21.3164556962025,20.9113924050633,20.506329113924,20.1012658227848,19.6962025316456,19.2911392405063,18.8860759493671,18.4810126582278,18.0759493670886,17.6708860759494,17.2658227848101,16.8607594936709,16.4556962025316,16.0506329113924,15.6455696202532,15.2405063291139,14.8354430379747,14.4303797468354,14.0253164556962,13.620253164557,13.2151898734177,12.8101265822785,12.4050632911392,12,12],"y":[8.69286466539615,8.97933261559525,9.2657206238399,9.55202148816596,9.8382271925684,10.1243288026233,10.4103163477621,10.6961786890465,10.9819033715134,11.267476460581,11.5528823627233,11.838103631747,12.1231207637036,12.4079119859249,12.6924530490933,12.9767170358554,13.2606742053956,13.5442919005759,13.8275345523587,14.1103638243433,14.392738946642,14.6746172902831,14.9559552272086,15.2367093026802,15.5168377134386,15.7963020361912,16.0750690922462,16.3531127773418,16.6304156481581,16.9069700558908,17.182778662093,17.4578542578724,17.7322189143767,18.005902591831,18.278941400789,18.5513757300657,18.8232484341006,19.0946032227479,19.3654833368012,19.6359305378715,19.9059844000582,20.1756818654657,20.4450570140895,20.7141409971324,20.982962087453,21.2515458084061,21.5199151105996,21.7880905738081,22.0560906178311,22.3239317113074,22.5916285714706,22.8591943507262,23.1266408079725,23.393978463972,23.6612167409778,23.9283640873692,24.1954280883632,24.46241556401,24.7293326557222,24.9961849025556,25.2629773083927,25.529714401089,25.7964002845441,26.0630386845598,26.3296329892508,26.5961862846849,26.8627013863474,27.1291808669495,27.3956270810369,27.6620421867953,27.9284281653979,28.1947868381983,28.4611198820287,28.7274288428348,28.9937151478442,29.2599801164441,29.5262249699185,29.7924508401782,30.058658777599,30.3248497580702,30.3248497580702,31.4868352518278,31.1995322684289,30.9122462419798,30.6249781483694,30.3377290379738,30.0505000427036,29.763292383843,29.4761073807791,29.1889464607395,28.9018111696698,28.6147031844025,28.3276243262908,28.0405765765082,27.7535620932403,27.4665832310328,27.1796425625969,26.8927429034178,26.6058873395634,26.3190792591485,26.0323223879748,25.7456208299419,25.4589791129053,25.1724022407475,24.8858957525242,24.5994657896482,24.3131191721696,24.0268634853053,23.7407071774349,23.4546596708111,23.1687314861967,22.8829343824899,22.5972815120961,22.3117875922491,22.0264690915877,21.7413444299111,21.4564341869941,21.1717613134448,20.8873513326176,20.6032325173714,20.3194360189088,20.0359959172255,19.7529491544258,19.4703353046091,19.1881961293863,18.9065748695513,18.625515234958,18.345060080046,18.0652497936302,17.7861204862645,17.5077021181739,17.230016760506,16.9530772043687,16.676886111315,16.4014358325406,16.1267089247256,15.8526792836081,15.5793137304965,15.3065738420981,15.0344178151536,14.7628021949246,14.4916833533532,14.2210186614679,13.9507673493807,13.6808910806909,13.4113542863611,13.1421243092532,12.8731714085515,12.6044686669028,12.3359918349894,12.0677191401431,11.7996310784154,11.5317102036129,11.2639409222098,10.9963092996242,10.728802880893,10.4614105270778,10.1941222676103,9.9269291680663,9.65982321244093,9.39279719877,8.69286466539615],"text":["hwy: 12<br />cty:  9.0","hwy: 12<br />cty:  9.3","hwy: 13<br />cty:  9.6","hwy: 13<br />cty:  9.9","hwy: 14<br />cty: 10.1","hwy: 14<br />cty: 10.4","hwy: 14<br />cty: 10.7","hwy: 15<br />cty: 11.0","hwy: 15<br />cty: 11.3","hwy: 16<br />cty: 11.5","hwy: 16<br />cty: 11.8","hwy: 16<br />cty: 12.1","hwy: 17<br />cty: 12.4","hwy: 17<br />cty: 12.6","hwy: 18<br />cty: 12.9","hwy: 18<br />cty: 13.2","hwy: 18<br />cty: 13.5","hwy: 19<br />cty: 13.7","hwy: 19<br />cty: 14.0","hwy: 20<br />cty: 14.3","hwy: 20<br />cty: 14.6","hwy: 21<br />cty: 14.9","hwy: 21<br />cty: 15.1","hwy: 21<br />cty: 15.4","hwy: 22<br />cty: 15.7","hwy: 22<br />cty: 16.0","hwy: 23<br />cty: 16.2","hwy: 23<br />cty: 16.5","hwy: 23<br />cty: 16.8","hwy: 24<br />cty: 17.1","hwy: 24<br />cty: 17.3","hwy: 25<br />cty: 17.6","hwy: 25<br />cty: 17.9","hwy: 25<br />cty: 18.2","hwy: 26<br />cty: 18.5","hwy: 26<br />cty: 18.7","hwy: 27<br />cty: 19.0","hwy: 27<br />cty: 19.3","hwy: 27<br />cty: 19.6","hwy: 28<br />cty: 19.8","hwy: 28<br />cty: 20.1","hwy: 29<br />cty: 20.4","hwy: 29<br />cty: 20.7","hwy: 29<br />cty: 20.9","hwy: 30<br />cty: 21.2","hwy: 30<br />cty: 21.5","hwy: 31<br />cty: 21.8","hwy: 31<br />cty: 22.0","hwy: 31<br />cty: 22.3","hwy: 32<br />cty: 22.6","hwy: 32<br />cty: 22.9","hwy: 33<br />cty: 23.2","hwy: 33<br />cty: 23.4","hwy: 33<br />cty: 23.7","hwy: 34<br />cty: 24.0","hwy: 34<br />cty: 24.3","hwy: 35<br />cty: 24.5","hwy: 35<br />cty: 24.8","hwy: 35<br />cty: 25.1","hwy: 36<br />cty: 25.4","hwy: 36<br />cty: 25.6","hwy: 37<br />cty: 25.9","hwy: 37<br />cty: 26.2","hwy: 38<br />cty: 26.5","hwy: 38<br />cty: 26.8","hwy: 38<br />cty: 27.0","hwy: 39<br />cty: 27.3","hwy: 39<br />cty: 27.6","hwy: 40<br />cty: 27.9","hwy: 40<br />cty: 28.1","hwy: 40<br />cty: 28.4","hwy: 41<br />cty: 28.7","hwy: 41<br />cty: 29.0","hwy: 42<br />cty: 29.2","hwy: 42<br />cty: 29.5","hwy: 42<br />cty: 29.8","hwy: 43<br />cty: 30.1","hwy: 43<br />cty: 30.4","hwy: 44<br />cty: 30.6","hwy: 44<br />cty: 30.9","hwy: 44<br />cty: 30.9","hwy: 44<br />cty: 30.9","hwy: 44<br />cty: 30.6","hwy: 43<br />cty: 30.4","hwy: 43<br />cty: 30.1","hwy: 42<br />cty: 29.8","hwy: 42<br />cty: 29.5","hwy: 42<br />cty: 29.2","hwy: 41<br />cty: 29.0","hwy: 41<br />cty: 28.7","hwy: 40<br />cty: 28.4","hwy: 40<br />cty: 28.1","hwy: 40<br />cty: 27.9","hwy: 39<br />cty: 27.6","hwy: 39<br />cty: 27.3","hwy: 38<br />cty: 27.0","hwy: 38<br />cty: 26.8","hwy: 38<br />cty: 26.5","hwy: 37<br />cty: 26.2","hwy: 37<br />cty: 25.9","hwy: 36<br />cty: 25.6","hwy: 36<br />cty: 25.4","hwy: 35<br />cty: 25.1","hwy: 35<br />cty: 24.8","hwy: 35<br />cty: 24.5","hwy: 34<br />cty: 24.3","hwy: 34<br />cty: 24.0","hwy: 33<br />cty: 23.7","hwy: 33<br />cty: 23.4","hwy: 33<br />cty: 23.2","hwy: 32<br />cty: 22.9","hwy: 32<br />cty: 22.6","hwy: 31<br />cty: 22.3","hwy: 31<br />cty: 22.0","hwy: 31<br />cty: 21.8","hwy: 30<br />cty: 21.5","hwy: 30<br />cty: 21.2","hwy: 29<br />cty: 20.9","hwy: 29<br />cty: 20.7","hwy: 29<br />cty: 20.4","hwy: 28<br />cty: 20.1","hwy: 28<br />cty: 19.8","hwy: 27<br />cty: 19.6","hwy: 27<br />cty: 19.3","hwy: 27<br />cty: 19.0","hwy: 26<br />cty: 18.7","hwy: 26<br />cty: 18.5","hwy: 25<br />cty: 18.2","hwy: 25<br />cty: 17.9","hwy: 25<br />cty: 17.6","hwy: 24<br />cty: 17.3","hwy: 24<br />cty: 17.1","hwy: 23<br />cty: 16.8","hwy: 23<br />cty: 16.5","hwy: 23<br />cty: 16.2","hwy: 22<br />cty: 16.0","hwy: 22<br />cty: 15.7","hwy: 21<br />cty: 15.4","hwy: 21<br />cty: 15.1","hwy: 21<br />cty: 14.9","hwy: 20<br />cty: 14.6","hwy: 20<br />cty: 14.3","hwy: 19<br />cty: 14.0","hwy: 19<br />cty: 13.7","hwy: 18<br />cty: 13.5","hwy: 18<br />cty: 13.2","hwy: 18<br />cty: 12.9","hwy: 17<br />cty: 12.6","hwy: 17<br />cty: 12.4","hwy: 16<br />cty: 12.1","hwy: 16<br />cty: 11.8","hwy: 16<br />cty: 11.5","hwy: 15<br />cty: 11.3","hwy: 15<br />cty: 11.0","hwy: 14<br />cty: 10.7","hwy: 14<br />cty: 10.4","hwy: 14<br />cty: 10.1","hwy: 13<br />cty:  9.9","hwy: 13<br />cty:  9.6","hwy: 12<br />cty:  9.3","hwy: 12<br />cty:  9.0","hwy: 12<br />cty:  9.0"],"type":"scatter","mode":"lines","line":{"width":3.77952755905512,"color":"transparent","dash":"solid"},"fill":"toself","fillcolor":"rgba(153,153,153,0.4)","hoveron":"points","hoverinfo":"x+y","showlegend":false,"xaxis":"x","yaxis":"y","frame":null}],"layout":{"margin":{"t":27.8721461187215,"r":7.30593607305936,"b":41.8264840182648,"l":37.2602739726027},"plot_bgcolor":"rgba(235,235,235,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[10.4,45.6],"tickmode":"array","ticktext":["20","30","40"],"tickvals":[20,30,40],"categoryorder":"array","categoryarray":["20","30","40"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(255,255,255,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"y","title":{"text":"hwy","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[7.37750789866596,36.3153567667302],"tickmode":"array","ticktext":["10","20","30"],"tickvals":[10,20,30],"categoryorder":"array","categoryarray":["10","20","30"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(255,255,255,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"x","title":{"text":"cty","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","showSendToCloud":false},"source":"A","attrs":{"c5212036c403":{"x":{},"y":{},"type":"scatter"},"c5216b7eb17a":{"x":{},"y":{}}},"cur_data":"c5212036c403","visdat":{"c5212036c403":["function (y) ","x"],"c5216b7eb17a":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-56581e3ccfa5c2a1010b" style="width:624px;height:384px;"></div>
+<script type="application/json" data-for="htmlwidget-56581e3ccfa5c2a1010b">{"x":{"data":[{"x":[29,29,31,30,26,26,27,26,25,28,27,25,25,25,25,24,25,23,20,15,20,17,17,26,23,26,25,24,19,14,15,17,27,30,26,29,26,24,24,22,22,24,24,17,22,21,23,23,19,18,17,17,19,19,12,17,15,17,17,12,17,16,18,15,16,12,17,17,16,12,15,16,17,15,17,17,18,17,19,17,19,19,17,17,17,16,16,17,15,17,26,25,26,24,21,22,23,22,20,33,32,32,29,32,34,36,36,29,26,27,30,31,26,26,28,26,29,28,27,24,24,24,22,19,20,17,12,19,18,14,15,18,18,15,17,16,18,17,19,19,17,29,27,31,32,27,26,26,25,25,17,17,20,18,26,26,27,28,25,25,24,27,25,26,23,26,26,26,26,25,27,25,27,20,20,19,17,20,17,29,27,31,31,26,26,28,27,29,31,31,26,26,27,30,33,35,37,35,15,18,20,20,22,17,19,18,20,29,26,29,29,24,44,29,26,29,29,29,29,23,24,44,41,29,26,28,29,29,29,28,29,26,26,26],"y":[18,21,20,21,16,18,18,18,16,20,19,15,17,17,15,15,17,16,14,11,14,13,12,16,15,16,15,15,14,11,11,14,19,22,18,18,17,18,17,16,16,17,17,11,15,15,16,16,15,14,13,14,14,14,9,11,11,13,13,9,13,11,13,11,12,9,13,13,12,9,11,11,13,11,11,11,12,14,15,14,13,13,13,14,14,13,13,13,11,13,18,18,17,16,15,15,15,15,14,28,24,25,23,24,26,25,24,21,18,18,21,21,18,18,19,19,19,20,20,17,16,17,17,15,15,14,9,14,13,11,11,12,12,11,11,11,12,14,13,13,13,21,19,23,23,19,19,18,19,19,14,15,14,12,18,16,17,18,16,18,18,20,19,20,18,21,19,19,19,20,20,19,20,15,16,15,15,16,14,21,21,21,21,18,18,19,21,21,21,22,18,18,18,24,24,26,28,26,11,13,15,16,17,15,15,15,16,21,19,21,22,17,33,21,19,22,21,21,21,16,17,35,29,21,19,20,20,21,18,19,21,16,18,17],"text":["hwy: 29<br />cty: 18","hwy: 29<br />cty: 21","hwy: 31<br />cty: 20","hwy: 30<br />cty: 21","hwy: 26<br />cty: 16","hwy: 26<br />cty: 18","hwy: 27<br />cty: 18","hwy: 26<br />cty: 18","hwy: 25<br />cty: 16","hwy: 28<br />cty: 20","hwy: 27<br />cty: 19","hwy: 25<br />cty: 15","hwy: 25<br />cty: 17","hwy: 25<br />cty: 17","hwy: 25<br />cty: 15","hwy: 24<br />cty: 15","hwy: 25<br />cty: 17","hwy: 23<br />cty: 16","hwy: 20<br />cty: 14","hwy: 15<br />cty: 11","hwy: 20<br />cty: 14","hwy: 17<br />cty: 13","hwy: 17<br />cty: 12","hwy: 26<br />cty: 16","hwy: 23<br />cty: 15","hwy: 26<br />cty: 16","hwy: 25<br />cty: 15","hwy: 24<br />cty: 15","hwy: 19<br />cty: 14","hwy: 14<br />cty: 11","hwy: 15<br />cty: 11","hwy: 17<br />cty: 14","hwy: 27<br />cty: 19","hwy: 30<br />cty: 22","hwy: 26<br />cty: 18","hwy: 29<br />cty: 18","hwy: 26<br />cty: 17","hwy: 24<br />cty: 18","hwy: 24<br />cty: 17","hwy: 22<br />cty: 16","hwy: 22<br />cty: 16","hwy: 24<br />cty: 17","hwy: 24<br />cty: 17","hwy: 17<br />cty: 11","hwy: 22<br />cty: 15","hwy: 21<br />cty: 15","hwy: 23<br />cty: 16","hwy: 23<br />cty: 16","hwy: 19<br />cty: 15","hwy: 18<br />cty: 14","hwy: 17<br />cty: 13","hwy: 17<br />cty: 14","hwy: 19<br />cty: 14","hwy: 19<br />cty: 14","hwy: 12<br />cty:  9","hwy: 17<br />cty: 11","hwy: 15<br />cty: 11","hwy: 17<br />cty: 13","hwy: 17<br />cty: 13","hwy: 12<br />cty:  9","hwy: 17<br />cty: 13","hwy: 16<br />cty: 11","hwy: 18<br />cty: 13","hwy: 15<br />cty: 11","hwy: 16<br />cty: 12","hwy: 12<br />cty:  9","hwy: 17<br />cty: 13","hwy: 17<br />cty: 13","hwy: 16<br />cty: 12","hwy: 12<br />cty:  9","hwy: 15<br />cty: 11","hwy: 16<br />cty: 11","hwy: 17<br />cty: 13","hwy: 15<br />cty: 11","hwy: 17<br />cty: 11","hwy: 17<br />cty: 11","hwy: 18<br />cty: 12","hwy: 17<br />cty: 14","hwy: 19<br />cty: 15","hwy: 17<br />cty: 14","hwy: 19<br />cty: 13","hwy: 19<br />cty: 13","hwy: 17<br />cty: 13","hwy: 17<br />cty: 14","hwy: 17<br />cty: 14","hwy: 16<br />cty: 13","hwy: 16<br />cty: 13","hwy: 17<br />cty: 13","hwy: 15<br />cty: 11","hwy: 17<br />cty: 13","hwy: 26<br />cty: 18","hwy: 25<br />cty: 18","hwy: 26<br />cty: 17","hwy: 24<br />cty: 16","hwy: 21<br />cty: 15","hwy: 22<br />cty: 15","hwy: 23<br />cty: 15","hwy: 22<br />cty: 15","hwy: 20<br />cty: 14","hwy: 33<br />cty: 28","hwy: 32<br />cty: 24","hwy: 32<br />cty: 25","hwy: 29<br />cty: 23","hwy: 32<br />cty: 24","hwy: 34<br />cty: 26","hwy: 36<br />cty: 25","hwy: 36<br />cty: 24","hwy: 29<br />cty: 21","hwy: 26<br />cty: 18","hwy: 27<br />cty: 18","hwy: 30<br />cty: 21","hwy: 31<br />cty: 21","hwy: 26<br />cty: 18","hwy: 26<br />cty: 18","hwy: 28<br />cty: 19","hwy: 26<br />cty: 19","hwy: 29<br />cty: 19","hwy: 28<br />cty: 20","hwy: 27<br />cty: 20","hwy: 24<br />cty: 17","hwy: 24<br />cty: 16","hwy: 24<br />cty: 17","hwy: 22<br />cty: 17","hwy: 19<br />cty: 15","hwy: 20<br />cty: 15","hwy: 17<br />cty: 14","hwy: 12<br />cty:  9","hwy: 19<br />cty: 14","hwy: 18<br />cty: 13","hwy: 14<br />cty: 11","hwy: 15<br />cty: 11","hwy: 18<br />cty: 12","hwy: 18<br />cty: 12","hwy: 15<br />cty: 11","hwy: 17<br />cty: 11","hwy: 16<br />cty: 11","hwy: 18<br />cty: 12","hwy: 17<br />cty: 14","hwy: 19<br />cty: 13","hwy: 19<br />cty: 13","hwy: 17<br />cty: 13","hwy: 29<br />cty: 21","hwy: 27<br />cty: 19","hwy: 31<br />cty: 23","hwy: 32<br />cty: 23","hwy: 27<br />cty: 19","hwy: 26<br />cty: 19","hwy: 26<br />cty: 18","hwy: 25<br />cty: 19","hwy: 25<br />cty: 19","hwy: 17<br />cty: 14","hwy: 17<br />cty: 15","hwy: 20<br />cty: 14","hwy: 18<br />cty: 12","hwy: 26<br />cty: 18","hwy: 26<br />cty: 16","hwy: 27<br />cty: 17","hwy: 28<br />cty: 18","hwy: 25<br />cty: 16","hwy: 25<br />cty: 18","hwy: 24<br />cty: 18","hwy: 27<br />cty: 20","hwy: 25<br />cty: 19","hwy: 26<br />cty: 20","hwy: 23<br />cty: 18","hwy: 26<br />cty: 21","hwy: 26<br />cty: 19","hwy: 26<br />cty: 19","hwy: 26<br />cty: 19","hwy: 25<br />cty: 20","hwy: 27<br />cty: 20","hwy: 25<br />cty: 19","hwy: 27<br />cty: 20","hwy: 20<br />cty: 15","hwy: 20<br />cty: 16","hwy: 19<br />cty: 15","hwy: 17<br />cty: 15","hwy: 20<br />cty: 16","hwy: 17<br />cty: 14","hwy: 29<br />cty: 21","hwy: 27<br />cty: 21","hwy: 31<br />cty: 21","hwy: 31<br />cty: 21","hwy: 26<br />cty: 18","hwy: 26<br />cty: 18","hwy: 28<br />cty: 19","hwy: 27<br />cty: 21","hwy: 29<br />cty: 21","hwy: 31<br />cty: 21","hwy: 31<br />cty: 22","hwy: 26<br />cty: 18","hwy: 26<br />cty: 18","hwy: 27<br />cty: 18","hwy: 30<br />cty: 24","hwy: 33<br />cty: 24","hwy: 35<br />cty: 26","hwy: 37<br />cty: 28","hwy: 35<br />cty: 26","hwy: 15<br />cty: 11","hwy: 18<br />cty: 13","hwy: 20<br />cty: 15","hwy: 20<br />cty: 16","hwy: 22<br />cty: 17","hwy: 17<br />cty: 15","hwy: 19<br />cty: 15","hwy: 18<br />cty: 15","hwy: 20<br />cty: 16","hwy: 29<br />cty: 21","hwy: 26<br />cty: 19","hwy: 29<br />cty: 21","hwy: 29<br />cty: 22","hwy: 24<br />cty: 17","hwy: 44<br />cty: 33","hwy: 29<br />cty: 21","hwy: 26<br />cty: 19","hwy: 29<br />cty: 22","hwy: 29<br />cty: 21","hwy: 29<br />cty: 21","hwy: 29<br />cty: 21","hwy: 23<br />cty: 16","hwy: 24<br />cty: 17","hwy: 44<br />cty: 35","hwy: 41<br />cty: 29","hwy: 29<br />cty: 21","hwy: 26<br />cty: 19","hwy: 28<br />cty: 20","hwy: 29<br />cty: 20","hwy: 29<br />cty: 21","hwy: 29<br />cty: 18","hwy: 28<br />cty: 19","hwy: 29<br />cty: 21","hwy: 26<br />cty: 16","hwy: 26<br />cty: 18","hwy: 26<br />cty: 17"],"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,0,0,1)","opacity":1,"size":5.66929133858268,"symbol":"circle","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)"}},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[12,12.4050632911392,12.8101265822785,13.2151898734177,13.620253164557,14.0253164556962,14.4303797468354,14.8354430379747,15.2405063291139,15.6455696202532,16.0506329113924,16.4556962025316,16.8607594936709,17.2658227848101,17.6708860759494,18.0759493670886,18.4810126582278,18.8860759493671,19.2911392405063,19.6962025316456,20.1012658227848,20.506329113924,20.9113924050633,21.3164556962025,21.7215189873418,22.126582278481,22.5316455696203,22.9367088607595,23.3417721518987,23.746835443038,24.1518987341772,24.5569620253165,24.9620253164557,25.3670886075949,25.7721518987342,26.1772151898734,26.5822784810127,26.9873417721519,27.3924050632911,27.7974683544304,28.2025316455696,28.6075949367089,29.0126582278481,29.4177215189873,29.8227848101266,30.2278481012658,30.6329113924051,31.0379746835443,31.4430379746835,31.8481012658228,32.253164556962,32.6582278481013,33.0632911392405,33.4683544303797,33.873417721519,34.2784810126582,34.6835443037975,35.0886075949367,35.4936708860759,35.8987341772152,36.3037974683544,36.7088607594937,37.1139240506329,37.5189873417722,37.9240506329114,38.3291139240506,38.7341772151899,39.1392405063291,39.5443037974684,39.9493670886076,40.3544303797468,40.7594936708861,41.1645569620253,41.5696202531646,41.9746835443038,42.379746835443,42.7848101265823,43.1898734177215,43.5949367088608,44],"y":[9.04283093208306,9.31957791401807,9.59632489595308,9.87307187788809,10.1498188598231,10.4265658417581,10.7033128236931,10.9800598056281,11.2568067875631,11.5335537694982,11.8103007514332,12.0870477333682,12.3637947153032,12.6405416972382,12.9172886791732,13.1940356611082,13.4707826430432,13.7475296249783,14.0242766069133,14.3010235888483,14.5777705707833,14.8545175527183,15.1312645346533,15.4080115165883,15.6847584985233,15.9615054804583,16.2382524623934,16.5149994443284,16.7917464262634,17.0684934081984,17.3452403901334,17.6219873720684,17.8987343540034,18.1754813359384,18.4522283178735,18.7289752998085,19.0057222817435,19.2824692636785,19.5592162456135,19.8359632275485,20.1127102094835,20.3894571914185,20.6662041733535,20.9429511552886,21.2196981372236,21.4964451191586,21.7731921010936,22.0499390830286,22.3266860649636,22.6034330468986,22.8801800288336,23.1569270107687,23.4336739927037,23.7104209746387,23.9871679565737,24.2639149385087,24.5406619204437,24.8174089023787,25.0941558843137,25.3709028662487,25.6476498481838,25.9243968301188,26.2011438120538,26.4778907939888,26.7546377759238,27.0313847578588,27.3081317397938,27.5848787217288,27.8616257036639,28.1383726855989,28.4151196675339,28.6918666494689,28.9686136314039,29.2453606133389,29.5221075952739,29.7988545772089,30.0756015591439,30.352348541079,30.629095523014,30.905842504949],"text":["hwy: 12<br />cty:  9.0","hwy: 12<br />cty:  9.3","hwy: 13<br />cty:  9.6","hwy: 13<br />cty:  9.9","hwy: 14<br />cty: 10.1","hwy: 14<br />cty: 10.4","hwy: 14<br />cty: 10.7","hwy: 15<br />cty: 11.0","hwy: 15<br />cty: 11.3","hwy: 16<br />cty: 11.5","hwy: 16<br />cty: 11.8","hwy: 16<br />cty: 12.1","hwy: 17<br />cty: 12.4","hwy: 17<br />cty: 12.6","hwy: 18<br />cty: 12.9","hwy: 18<br />cty: 13.2","hwy: 18<br />cty: 13.5","hwy: 19<br />cty: 13.7","hwy: 19<br />cty: 14.0","hwy: 20<br />cty: 14.3","hwy: 20<br />cty: 14.6","hwy: 21<br />cty: 14.9","hwy: 21<br />cty: 15.1","hwy: 21<br />cty: 15.4","hwy: 22<br />cty: 15.7","hwy: 22<br />cty: 16.0","hwy: 23<br />cty: 16.2","hwy: 23<br />cty: 16.5","hwy: 23<br />cty: 16.8","hwy: 24<br />cty: 17.1","hwy: 24<br />cty: 17.3","hwy: 25<br />cty: 17.6","hwy: 25<br />cty: 17.9","hwy: 25<br />cty: 18.2","hwy: 26<br />cty: 18.5","hwy: 26<br />cty: 18.7","hwy: 27<br />cty: 19.0","hwy: 27<br />cty: 19.3","hwy: 27<br />cty: 19.6","hwy: 28<br />cty: 19.8","hwy: 28<br />cty: 20.1","hwy: 29<br />cty: 20.4","hwy: 29<br />cty: 20.7","hwy: 29<br />cty: 20.9","hwy: 30<br />cty: 21.2","hwy: 30<br />cty: 21.5","hwy: 31<br />cty: 21.8","hwy: 31<br />cty: 22.0","hwy: 31<br />cty: 22.3","hwy: 32<br />cty: 22.6","hwy: 32<br />cty: 22.9","hwy: 33<br />cty: 23.2","hwy: 33<br />cty: 23.4","hwy: 33<br />cty: 23.7","hwy: 34<br />cty: 24.0","hwy: 34<br />cty: 24.3","hwy: 35<br />cty: 24.5","hwy: 35<br />cty: 24.8","hwy: 35<br />cty: 25.1","hwy: 36<br />cty: 25.4","hwy: 36<br />cty: 25.6","hwy: 37<br />cty: 25.9","hwy: 37<br />cty: 26.2","hwy: 38<br />cty: 26.5","hwy: 38<br />cty: 26.8","hwy: 38<br />cty: 27.0","hwy: 39<br />cty: 27.3","hwy: 39<br />cty: 27.6","hwy: 40<br />cty: 27.9","hwy: 40<br />cty: 28.1","hwy: 40<br />cty: 28.4","hwy: 41<br />cty: 28.7","hwy: 41<br />cty: 29.0","hwy: 42<br />cty: 29.2","hwy: 42<br />cty: 29.5","hwy: 42<br />cty: 29.8","hwy: 43<br />cty: 30.1","hwy: 43<br />cty: 30.4","hwy: 44<br />cty: 30.6","hwy: 44<br />cty: 30.9"],"type":"scatter","mode":"lines","name":"fitted values","line":{"width":3.77952755905512,"color":"rgba(51,102,255,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[12,12.4050632911392,12.8101265822785,13.2151898734177,13.620253164557,14.0253164556962,14.4303797468354,14.8354430379747,15.2405063291139,15.6455696202532,16.0506329113924,16.4556962025316,16.8607594936709,17.2658227848101,17.6708860759494,18.0759493670886,18.4810126582278,18.8860759493671,19.2911392405063,19.6962025316456,20.1012658227848,20.506329113924,20.9113924050633,21.3164556962025,21.7215189873418,22.126582278481,22.5316455696203,22.9367088607595,23.3417721518987,23.746835443038,24.1518987341772,24.5569620253165,24.9620253164557,25.3670886075949,25.7721518987342,26.1772151898734,26.5822784810127,26.9873417721519,27.3924050632911,27.7974683544304,28.2025316455696,28.6075949367089,29.0126582278481,29.4177215189873,29.8227848101266,30.2278481012658,30.6329113924051,31.0379746835443,31.4430379746835,31.8481012658228,32.253164556962,32.6582278481013,33.0632911392405,33.4683544303797,33.873417721519,34.2784810126582,34.6835443037975,35.0886075949367,35.4936708860759,35.8987341772152,36.3037974683544,36.7088607594937,37.1139240506329,37.5189873417722,37.9240506329114,38.3291139240506,38.7341772151899,39.1392405063291,39.5443037974684,39.9493670886076,40.3544303797468,40.7594936708861,41.1645569620253,41.5696202531646,41.9746835443038,42.379746835443,42.7848101265823,43.1898734177215,43.5949367088608,44,44,44,43.5949367088608,43.1898734177215,42.7848101265823,42.379746835443,41.9746835443038,41.5696202531646,41.1645569620253,40.7594936708861,40.3544303797468,39.9493670886076,39.5443037974684,39.1392405063291,38.7341772151899,38.3291139240506,37.9240506329114,37.5189873417722,37.1139240506329,36.7088607594937,36.3037974683544,35.8987341772152,35.4936708860759,35.0886075949367,34.6835443037975,34.2784810126582,33.873417721519,33.4683544303797,33.0632911392405,32.6582278481013,32.253164556962,31.8481012658228,31.4430379746835,31.0379746835443,30.6329113924051,30.2278481012658,29.8227848101266,29.4177215189873,29.0126582278481,28.6075949367089,28.2025316455696,27.7974683544304,27.3924050632911,26.9873417721519,26.5822784810127,26.1772151898734,25.7721518987342,25.3670886075949,24.9620253164557,24.5569620253165,24.1518987341772,23.746835443038,23.3417721518987,22.9367088607595,22.5316455696203,22.126582278481,21.7215189873418,21.3164556962025,20.9113924050633,20.506329113924,20.1012658227848,19.6962025316456,19.2911392405063,18.8860759493671,18.4810126582278,18.0759493670886,17.6708860759494,17.2658227848101,16.8607594936709,16.4556962025316,16.0506329113924,15.6455696202532,15.2405063291139,14.8354430379747,14.4303797468354,14.0253164556962,13.620253164557,13.2151898734177,12.8101265822785,12.4050632911392,12,12],"y":[8.69286466539613,8.97933261559523,9.26572062383988,9.55202148816594,9.83822719256838,10.1243288026233,10.4103163477621,10.6961786890465,10.9819033715134,11.2674764605809,11.5528823627233,11.838103631747,12.1231207637036,12.4079119859249,12.6924530490932,12.9767170358553,13.2606742053956,13.5442919005759,13.8275345523586,14.1103638243433,14.392738946642,14.6746172902831,14.9559552272086,15.2367093026802,15.5168377134386,15.7963020361912,16.0750690922462,16.3531127773418,16.6304156481581,16.9069700558908,17.182778662093,17.4578542578724,17.7322189143767,18.0059025918309,18.2789414007889,18.5513757300657,18.8232484341006,19.0946032227479,19.3654833368012,19.6359305378715,19.9059844000582,20.1756818654656,20.4450570140895,20.7141409971323,20.982962087453,21.2515458084061,21.5199151105995,21.7880905738081,22.0560906178311,22.3239317113074,22.5916285714706,22.8591943507262,23.1266408079724,23.393978463972,23.6612167409778,23.9283640873692,24.1954280883632,24.46241556401,24.7293326557222,24.9961849025556,25.2629773083927,25.529714401089,25.7964002845441,26.0630386845598,26.3296329892507,26.5961862846849,26.8627013863474,27.1291808669495,27.3956270810369,27.6620421867953,27.9284281653979,28.1947868381983,28.4611198820287,28.7274288428348,28.9937151478442,29.2599801164441,29.5262249699185,29.7924508401782,30.058658777599,30.3248497580702,30.3248497580702,31.4868352518278,31.1995322684289,30.9122462419798,30.6249781483694,30.3377290379738,30.0505000427036,29.763292383843,29.4761073807791,29.1889464607395,28.9018111696698,28.6147031844025,28.3276243262908,28.0405765765082,27.7535620932403,27.4665832310327,27.1796425625969,26.8927429034178,26.6058873395634,26.3190792591485,26.0323223879748,25.7456208299419,25.4589791129053,25.1724022407475,24.8858957525242,24.5994657896482,24.3131191721695,24.0268634853053,23.7407071774349,23.4546596708111,23.1687314861967,22.8829343824899,22.5972815120961,22.3117875922491,22.0264690915876,21.7413444299111,21.4564341869941,21.1717613134448,20.8873513326176,20.6032325173714,20.3194360189088,20.0359959172255,19.7529491544258,19.4703353046091,19.1881961293863,18.9065748695513,18.625515234958,18.3450600800459,18.0652497936302,17.7861204862645,17.5077021181739,17.230016760506,16.9530772043687,16.676886111315,16.4014358325405,16.1267089247255,15.8526792836081,15.5793137304964,15.306573842098,15.0344178151535,14.7628021949246,14.4916833533532,14.2210186614679,13.9507673493806,13.6808910806909,13.4113542863611,13.1421243092532,12.8731714085515,12.6044686669028,12.3359918349894,12.0677191401431,11.7996310784154,11.5317102036129,11.2639409222098,10.9963092996242,10.728802880893,10.4614105270778,10.1941222676102,9.92692916806628,9.65982321244091,9.39279719876998,8.69286466539613],"text":["hwy: 12<br />cty:  9.0","hwy: 12<br />cty:  9.3","hwy: 13<br />cty:  9.6","hwy: 13<br />cty:  9.9","hwy: 14<br />cty: 10.1","hwy: 14<br />cty: 10.4","hwy: 14<br />cty: 10.7","hwy: 15<br />cty: 11.0","hwy: 15<br />cty: 11.3","hwy: 16<br />cty: 11.5","hwy: 16<br />cty: 11.8","hwy: 16<br />cty: 12.1","hwy: 17<br />cty: 12.4","hwy: 17<br />cty: 12.6","hwy: 18<br />cty: 12.9","hwy: 18<br />cty: 13.2","hwy: 18<br />cty: 13.5","hwy: 19<br />cty: 13.7","hwy: 19<br />cty: 14.0","hwy: 20<br />cty: 14.3","hwy: 20<br />cty: 14.6","hwy: 21<br />cty: 14.9","hwy: 21<br />cty: 15.1","hwy: 21<br />cty: 15.4","hwy: 22<br />cty: 15.7","hwy: 22<br />cty: 16.0","hwy: 23<br />cty: 16.2","hwy: 23<br />cty: 16.5","hwy: 23<br />cty: 16.8","hwy: 24<br />cty: 17.1","hwy: 24<br />cty: 17.3","hwy: 25<br />cty: 17.6","hwy: 25<br />cty: 17.9","hwy: 25<br />cty: 18.2","hwy: 26<br />cty: 18.5","hwy: 26<br />cty: 18.7","hwy: 27<br />cty: 19.0","hwy: 27<br />cty: 19.3","hwy: 27<br />cty: 19.6","hwy: 28<br />cty: 19.8","hwy: 28<br />cty: 20.1","hwy: 29<br />cty: 20.4","hwy: 29<br />cty: 20.7","hwy: 29<br />cty: 20.9","hwy: 30<br />cty: 21.2","hwy: 30<br />cty: 21.5","hwy: 31<br />cty: 21.8","hwy: 31<br />cty: 22.0","hwy: 31<br />cty: 22.3","hwy: 32<br />cty: 22.6","hwy: 32<br />cty: 22.9","hwy: 33<br />cty: 23.2","hwy: 33<br />cty: 23.4","hwy: 33<br />cty: 23.7","hwy: 34<br />cty: 24.0","hwy: 34<br />cty: 24.3","hwy: 35<br />cty: 24.5","hwy: 35<br />cty: 24.8","hwy: 35<br />cty: 25.1","hwy: 36<br />cty: 25.4","hwy: 36<br />cty: 25.6","hwy: 37<br />cty: 25.9","hwy: 37<br />cty: 26.2","hwy: 38<br />cty: 26.5","hwy: 38<br />cty: 26.8","hwy: 38<br />cty: 27.0","hwy: 39<br />cty: 27.3","hwy: 39<br />cty: 27.6","hwy: 40<br />cty: 27.9","hwy: 40<br />cty: 28.1","hwy: 40<br />cty: 28.4","hwy: 41<br />cty: 28.7","hwy: 41<br />cty: 29.0","hwy: 42<br />cty: 29.2","hwy: 42<br />cty: 29.5","hwy: 42<br />cty: 29.8","hwy: 43<br />cty: 30.1","hwy: 43<br />cty: 30.4","hwy: 44<br />cty: 30.6","hwy: 44<br />cty: 30.9","hwy: 44<br />cty: 30.9","hwy: 44<br />cty: 30.9","hwy: 44<br />cty: 30.6","hwy: 43<br />cty: 30.4","hwy: 43<br />cty: 30.1","hwy: 42<br />cty: 29.8","hwy: 42<br />cty: 29.5","hwy: 42<br />cty: 29.2","hwy: 41<br />cty: 29.0","hwy: 41<br />cty: 28.7","hwy: 40<br />cty: 28.4","hwy: 40<br />cty: 28.1","hwy: 40<br />cty: 27.9","hwy: 39<br />cty: 27.6","hwy: 39<br />cty: 27.3","hwy: 38<br />cty: 27.0","hwy: 38<br />cty: 26.8","hwy: 38<br />cty: 26.5","hwy: 37<br />cty: 26.2","hwy: 37<br />cty: 25.9","hwy: 36<br />cty: 25.6","hwy: 36<br />cty: 25.4","hwy: 35<br />cty: 25.1","hwy: 35<br />cty: 24.8","hwy: 35<br />cty: 24.5","hwy: 34<br />cty: 24.3","hwy: 34<br />cty: 24.0","hwy: 33<br />cty: 23.7","hwy: 33<br />cty: 23.4","hwy: 33<br />cty: 23.2","hwy: 32<br />cty: 22.9","hwy: 32<br />cty: 22.6","hwy: 31<br />cty: 22.3","hwy: 31<br />cty: 22.0","hwy: 31<br />cty: 21.8","hwy: 30<br />cty: 21.5","hwy: 30<br />cty: 21.2","hwy: 29<br />cty: 20.9","hwy: 29<br />cty: 20.7","hwy: 29<br />cty: 20.4","hwy: 28<br />cty: 20.1","hwy: 28<br />cty: 19.8","hwy: 27<br />cty: 19.6","hwy: 27<br />cty: 19.3","hwy: 27<br />cty: 19.0","hwy: 26<br />cty: 18.7","hwy: 26<br />cty: 18.5","hwy: 25<br />cty: 18.2","hwy: 25<br />cty: 17.9","hwy: 25<br />cty: 17.6","hwy: 24<br />cty: 17.3","hwy: 24<br />cty: 17.1","hwy: 23<br />cty: 16.8","hwy: 23<br />cty: 16.5","hwy: 23<br />cty: 16.2","hwy: 22<br />cty: 16.0","hwy: 22<br />cty: 15.7","hwy: 21<br />cty: 15.4","hwy: 21<br />cty: 15.1","hwy: 21<br />cty: 14.9","hwy: 20<br />cty: 14.6","hwy: 20<br />cty: 14.3","hwy: 19<br />cty: 14.0","hwy: 19<br />cty: 13.7","hwy: 18<br />cty: 13.5","hwy: 18<br />cty: 13.2","hwy: 18<br />cty: 12.9","hwy: 17<br />cty: 12.6","hwy: 17<br />cty: 12.4","hwy: 16<br />cty: 12.1","hwy: 16<br />cty: 11.8","hwy: 16<br />cty: 11.5","hwy: 15<br />cty: 11.3","hwy: 15<br />cty: 11.0","hwy: 14<br />cty: 10.7","hwy: 14<br />cty: 10.4","hwy: 14<br />cty: 10.1","hwy: 13<br />cty:  9.9","hwy: 13<br />cty:  9.6","hwy: 12<br />cty:  9.3","hwy: 12<br />cty:  9.0","hwy: 12<br />cty:  9.0"],"type":"scatter","mode":"lines","line":{"width":3.77952755905512,"color":"transparent","dash":"solid"},"fill":"toself","fillcolor":"rgba(153,153,153,0.4)","hoveron":"points","hoverinfo":"x+y","showlegend":false,"xaxis":"x","yaxis":"y","frame":null}],"layout":{"margin":{"t":27.8721461187215,"r":7.30593607305936,"b":41.8264840182648,"l":37.2602739726027},"plot_bgcolor":"rgba(235,235,235,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[10.4,45.6],"tickmode":"array","ticktext":["20","30","40"],"tickvals":[20,30,40],"categoryorder":"array","categoryarray":["20","30","40"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(255,255,255,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"y","title":{"text":"hwy","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[7.37750789866594,36.3153567667302],"tickmode":"array","ticktext":["10","20","30"],"tickvals":[10,20,30],"categoryorder":"array","categoryarray":["10","20","30"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(255,255,255,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"x","title":{"text":"cty","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"9173cd989d0":{"x":{},"y":{},"type":"scatter"},"9172457ac5e":{"x":{},"y":{}}},"cur_data":"9173cd989d0","visdat":{"9173cd989d0":["function (y) ","x"],"9172457ac5e":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 <h2 id="geom"><code>Geom</code></h2>
 <p>Temos vários! VÁRIOS! Vou mostrar alguns mais comuns:</p>
@@ -2539,11 +2577,10 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>hwy</span><span class='op'>)</span>, shape <span class='op'>=</span> <span class='fl'>3</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>cty</span><span class='op'>)</span>, shape <span class='op'>=</span> <span class='fl'>1</span>, color <span class='op'>=</span> <span class='st'>"red"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>hwy</span><span class='op'>)</span>, shape <span class='op'>=</span> <span class='fl'>3</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>cty</span><span class='op'>)</span>, shape <span class='op'>=</span> <span class='fl'>1</span>, color <span class='op'>=</span> <span class='st'>"red"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-point-1.png" width="624" /></p>
 </div>
@@ -2552,10 +2589,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mpg</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mpg</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-smooth-1.png" width="624" /></p>
 </div>
@@ -2564,10 +2600,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_boxplot.html'>geom_boxplot</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_boxplot.html'>geom_boxplot</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-boxplot-1.png" width="624" /></p>
 </div>
@@ -2576,19 +2611,17 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span><span class='op'>(</span>bins <span class='op'>=</span> <span class='fl'>30</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></span><span class='op'>(</span>bins <span class='op'>=</span> <span class='fl'>30</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-histogram-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_density.html'>geom_density</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_density.html'>geom_density</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-density-1.png" width="624" /></p>
 </div>
@@ -2597,23 +2630,21 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-bar-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://forcats.tidyverse.org'>forcats</a></span><span class='op'>)</span>
-<span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>class</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>class <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>class</span><span class='op'>)</span>,
-         class <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_reorder.html'>fct_reorder</a></span><span class='op'>(</span><span class='va'>class</span>, <span class='va'>n</span>, .desc <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span>, <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://forcats.tidyverse.org/'>forcats</a></span><span class='op'>)</span></span>
+<span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>class</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>class <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>class</span><span class='op'>)</span>,</span>
+<span>         class <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_reorder.html'>fct_reorder</a></span><span class='op'>(</span><span class='va'>class</span>, <span class='va'>n</span>, .desc <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span>, <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-col-1.png" width="624" /></p>
 </div>
@@ -2622,10 +2653,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>economics</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>unemploy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>economics</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>unemploy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/geom-line-1.png" width="624" /></p>
 </div>
@@ -2636,10 +2666,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>cyl</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>cyl</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/aes-colour-1.png" width="624" /></p>
 </div>
@@ -2648,10 +2677,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span>, fill <span class='op'>=</span> <span class='va'>manufacturer</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>class</span>, fill <span class='op'>=</span> <span class='va'>manufacturer</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/aes-fill-1.png" width="624" /></p>
 </div>
@@ -2660,10 +2688,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>cyl</span>, <span class='va'>cty</span>, shape <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>cyl</span>, <span class='va'>cty</span>, shape <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/aes-shape-1.png" width="624" /></p>
 </div>
@@ -2672,10 +2699,9 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/aes-size-1.png" width="624" /></p>
 </div>
@@ -2683,19 +2709,17 @@ Figure 2: Fundamentals of Data Visualization
 <p>Vejam abaixo o que vai acontecer!</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span>  <span class='st'>"steelblue"</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span>  <span class='st'>"steelblue"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/aes-dentro-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>displ</span><span class='op'>)</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span>, size <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>displ</span><span class='op'>)</span>, color <span class='op'>=</span> <span class='st'>"steelblue"</span>, size <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/aes-fora-1.png" width="624" /></p>
 </div>
@@ -2711,37 +2735,35 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>
-    title <span class='op'>=</span> <span class='st'>"Um gráfico bonito"</span>,
-    subtitle <span class='op'>=</span> <span class='st'>"... é aquele que tem subtítulos"</span>,
-    caption <span class='op'>=</span> <span class='st'>" ... juntamente com \"rubricas\""</span>,
-    x <span class='op'>=</span> <span class='st'>"Deslocamento Volumétrico"</span>,
-    y <span class='op'>=</span> <span class='st'>"Autonomia em Milhas por Galão"</span>,
-    colour <span class='op'>=</span> <span class='st'>"Tipo de Carro"</span>,
-    size <span class='op'>=</span> <span class='st'>"QTD Cilindros"</span>
-  <span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span></span>
+<span>    title <span class='op'>=</span> <span class='st'>"Um gráfico bonito"</span>,</span>
+<span>    subtitle <span class='op'>=</span> <span class='st'>"... é aquele que tem subtítulos"</span>,</span>
+<span>    caption <span class='op'>=</span> <span class='st'>" ... juntamente com \"rubricas\""</span>,</span>
+<span>    x <span class='op'>=</span> <span class='st'>"Deslocamento Volumétrico"</span>,</span>
+<span>    y <span class='op'>=</span> <span class='st'>"Autonomia em Milhas por Galão"</span>,</span>
+<span>    colour <span class='op'>=</span> <span class='st'>"Tipo de Carro"</span>,</span>
+<span>    size <span class='op'>=</span> <span class='st'>"QTD Cilindros"</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggplot-labs-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>
-    title <span class='op'>=</span> <span class='cn'>NULL</span>,
-    subtitle <span class='op'>=</span> <span class='cn'>NULL</span>,
-    caption <span class='op'>=</span> <span class='cn'>NULL</span>,
-    x <span class='op'>=</span> <span class='cn'>NULL</span>,
-    y <span class='op'>=</span> <span class='cn'>NULL</span>,
-    colour <span class='op'>=</span> <span class='cn'>NULL</span>,
-    size <span class='op'>=</span> <span class='cn'>NULL</span>
-  <span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span></span>
+<span>    title <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    subtitle <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    caption <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    x <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    y <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    colour <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>    size <span class='op'>=</span> <span class='cn'>NULL</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/labs-NULL-1.png" width="624" /></p>
 </div>
@@ -2750,11 +2772,10 @@ Figure 2: Fundamentals of Data Visualization
 <p>Para facetar um gráfico, você simplesmente adiciona uma especificação de facetamento com <a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html"><code>facet_wrap()</code></a>, que leva o nome de uma variável precedida por <code>~</code>.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/facet-wrap-1.png" width="624" /></p>
 </div>
@@ -2766,27 +2787,25 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span>,
-             ncol <span class='op'>=</span> <span class='fl'>2</span>,               <span class='co'># mutuamente exclusivo de `nrow`</span>
-             scales <span class='op'>=</span> <span class='st'>"free"</span>,        <span class='co'># cada faceta tem seu eixo x e y</span>
-             labeller <span class='op'>=</span> <span class='st'>"label_both"</span> <span class='co'># traz o label da "facet" junto com o valor das classes da faceta</span>
-             <span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span>,</span>
+<span>             ncol <span class='op'>=</span> <span class='fl'>2</span>,               <span class='co'># mutuamente exclusivo de `nrow`</span></span>
+<span>             scales <span class='op'>=</span> <span class='st'>"free"</span>,        <span class='co'># cada faceta tem seu eixo x e y</span></span>
+<span>             labeller <span class='op'>=</span> <span class='st'>"label_both"</span> <span class='co'># traz o label da "facet" junto com o valor das classes da faceta</span></span>
+<span>             <span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/facet-wrap-arguments-1.png" width="624" /></p>
 </div>
 <p>Você pode colocar mais <code>facets</code>. Quando você tem mais variáveis o <code>labeller = "label_value"</code> funciona muito bem.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span> <span class='op'>+</span> <span class='va'>cyl</span>,
-             labeller <span class='op'>=</span> <span class='st'>"label_both"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span> <span class='op'>+</span> <span class='va'>cyl</span>,</span>
+<span>             labeller <span class='op'>=</span> <span class='st'>"label_both"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/facet-wrap-multi-1.png" width="624" /></p>
 </div>
@@ -2797,19 +2816,18 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Algum título que eu vou querer em Comic Sans"</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span> <span class='op'>+</span> <span class='va'>cyl</span>,
-             labeller <span class='op'>=</span> <span class='st'>"label_both"</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>text <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>,
-        plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>family <span class='op'>=</span> <span class='st'>"Comic Sans MS"</span><span class='op'>)</span>,
-        axis.ticks.x <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_line</a></span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"purple"</span>,
-                                    arrow <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/arrow.html'>arrow</a></span><span class='op'>(</span>
-                                      length <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span>
-                                        <span class='fl'>1</span>, <span class='st'>"mm"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Algum título que eu vou querer em Comic Sans"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>class</span> <span class='op'>+</span> <span class='va'>cyl</span>,</span>
+<span>             labeller <span class='op'>=</span> <span class='st'>"label_both"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>text <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>,</span>
+<span>        plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>family <span class='op'>=</span> <span class='st'>"Comic Sans MS"</span><span class='op'>)</span>,</span>
+<span>        axis.ticks.x <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_line</a></span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"purple"</span>,</span>
+<span>                                    arrow <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/arrow.html'>arrow</a></span><span class='op'>(</span></span>
+<span>                                      length <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span></span>
+<span>                                        <span class='fl'>1</span>, <span class='st'>"mm"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/theme-element-1.png" width="624" /></p>
 </div>
@@ -2820,11 +2838,10 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_classic</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'># gosto bastante</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_classic</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'># gosto bastante</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/custom-themes-1.png" width="624" /></p>
 </div>
@@ -2835,11 +2852,10 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>economics</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>unemploy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_log10</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>economics</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>unemploy</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_log10</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/scale_y_log10-1.png" width="624" /></p>
 </div>
@@ -2848,11 +2864,10 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>alpha <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_brewer.html'>scale_color_brewer</a></span><span class='op'>(</span>palette <span class='op'>=</span> <span class='st'>"Set1"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>alpha <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_brewer.html'>scale_color_brewer</a></span><span class='op'>(</span>palette <span class='op'>=</span> <span class='st'>"Set1"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/scale_colour_brewer-1.png" width="624" /></p>
 </div>
@@ -2861,22 +2876,20 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_colour_viridis_d</a></span><span class='op'>(</span>option <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span> <span class='co'># cividis que é inclusivo de quem tem "dificuldades" de cores</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_colour_viridis_d</a></span><span class='op'>(</span>option <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span> <span class='co'># cividis que é inclusivo de quem tem "dificuldades" de cores</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/scale_fill_viridis_c-1.png" width="624" /></p>
 </div>
 <p>Vamos arrumar o gráfico anterior:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>alpha <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_size.html'>scale_size</a></span><span class='op'>(</span>range <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>3</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>displ</span>, <span class='va'>hwy</span>, colour <span class='op'>=</span> <span class='va'>class</span>, size <span class='op'>=</span> <span class='va'>cyl</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>alpha <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_size.html'>scale_size</a></span><span class='op'>(</span>range <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>3</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/scale_size-1.png" width="624" /></p>
 </div>
@@ -2887,12 +2900,11 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>economics</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>unemploy</span> <span class='op'>/</span> <span class='va'>pop</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_percent.html'>label_percent</a></span><span class='op'>(</span>accuracy <span class='op'>=</span> <span class='fl'>0.01</span>, decimal.mark <span class='op'>=</span> <span class='st'>","</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='st'>"% de Desempregados da Pop Total"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>economics</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>unemploy</span> <span class='op'>/</span> <span class='va'>pop</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_percent.html'>label_percent</a></span><span class='op'>(</span>accuracy <span class='op'>=</span> <span class='fl'>0.01</span>, decimal.mark <span class='op'>=</span> <span class='st'>","</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='st'>"% de Desempregados da Pop Total"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/label_percent-1.png" width="624" /></p>
 </div>
@@ -2902,15 +2914,14 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>economics</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>pce</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span>
-    labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_dollar.html'>label_dollar</a></span><span class='op'>(</span>prefix <span class='op'>=</span> <span class='st'>"R$ "</span>,
-                                  suffix <span class='op'>=</span> <span class='st'>" bi"</span>,
-                                  decimal.mark <span class='op'>=</span> <span class='st'>"."</span><span class='op'>)</span>
-  <span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>economics</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>date</span>, <span class='va'>pce</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_continuous</a></span><span class='op'>(</span></span>
+<span>    labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_dollar.html'>label_dollar</a></span><span class='op'>(</span>prefix <span class='op'>=</span> <span class='st'>"R$ "</span>,</span>
+<span>                                  suffix <span class='op'>=</span> <span class='st'>" bi"</span>,</span>
+<span>                                  decimal.mark <span class='op'>=</span> <span class='st'>"."</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/label_dollar-1.png" width="624" /></p>
 </div>
@@ -2921,18 +2932,17 @@ Figure 2: Fundamentals of Data Visualization
 <p>É apenas usando operadores aritméticos e relacionais já conhecidos como se fosse uma álgebra de gráficos: <code>()</code>, <code>+</code>, <code>/</code>, <code>|</code> etc.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://patchwork.data-imaginist.com'>patchwork</a></span><span class='op'>)</span>
-<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>mpg</span>, <span class='va'>disp</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_boxplot.html'>geom_boxplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>gear</span>, <span class='va'>disp</span>, group <span class='op'>=</span> <span class='va'>gear</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>p3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>disp</span>, <span class='va'>qsec</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>p4</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>carb</span><span class='op'>)</span><span class='op'>)</span>
-
-<span class='op'>(</span><span class='va'>p1</span> <span class='op'>|</span> <span class='va'>p2</span> <span class='op'>|</span> <span class='va'>p4</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>p3</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Quatro gráficos legais"</span>,
-                  tag_levels <span class='op'>=</span> <span class='st'>"I"</span>, tag_prefix <span class='op'>=</span> <span class='st'>"Fig. "</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>nrow <span class='op'>=</span> <span class='fl'>2</span>, widths <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>3</span><span class='op'>)</span>,
-              heights <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://patchwork.data-imaginist.com'>patchwork</a></span><span class='op'>)</span></span>
+<span><span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>mpg</span>, <span class='va'>disp</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_boxplot.html'>geom_boxplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>gear</span>, <span class='va'>disp</span>, group <span class='op'>=</span> <span class='va'>gear</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>p3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>disp</span>, <span class='va'>qsec</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>p4</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>carb</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='op'>(</span><span class='va'>p1</span> <span class='op'>|</span> <span class='va'>p2</span> <span class='op'>|</span> <span class='va'>p4</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>p3</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Quatro gráficos legais"</span>,</span>
+<span>                  tag_levels <span class='op'>=</span> <span class='st'>"I"</span>, tag_prefix <span class='op'>=</span> <span class='st'>"Fig. "</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>nrow <span class='op'>=</span> <span class='fl'>2</span>, widths <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>3</span><span class='op'>)</span>,</span>
+<span>              heights <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/patchwork-1.png" width="624" /></p>
 </div>
@@ -2943,24 +2953,22 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/slowkow/ggrepel'>ggrepel</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>wt</span>, <span class='va'>mpg</span>, label <span class='op'>=</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/rownames.html'>rownames</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/ggrepel/man/geom_text_repel.html'>geom_label_repel</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>'red'</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_classic</a></span><span class='op'>(</span>base_size <span class='op'>=</span> <span class='fl'>12</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/slowkow/ggrepel'>ggrepel</a></span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>wt</span>, <span class='va'>mpg</span>, label <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/pkg/ggrepel/man/geom_text_repel.html'>geom_label_repel</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>'red'</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_classic</a></span><span class='op'>(</span>base_size <span class='op'>=</span> <span class='fl'>12</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggrepel-1.png" width="624" /></p>
 </div>
 <p>Dá para fazer uma gambiarra</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://stringr.tidyverse.org'>stringr</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>wt</span>, <span class='va'>mpg</span>, label <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='fu'><a href='https://tibble.tidyverse.org/reference/rownames.html'>rownames</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span>, <span class='st'>"Merc"</span><span class='op'>)</span>, <span class='fu'><a href='https://tibble.tidyverse.org/reference/rownames.html'>rownames</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span>, <span class='cn'>NA_character_</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/ggrepel/man/geom_text_repel.html'>geom_text_repel</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>'red'</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_classic</a></span><span class='op'>(</span>base_size <span class='op'>=</span> <span class='fl'>12</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://stringr.tidyverse.org'>stringr</a></span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>mtcars</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>wt</span>, <span class='va'>mpg</span>, label <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span>, <span class='st'>"Merc"</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span>, <span class='cn'>NA_character_</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/pkg/ggrepel/man/geom_text_repel.html'>geom_text_repel</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>'red'</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_classic</a></span><span class='op'>(</span>base_size <span class='op'>=</span> <span class='fl'>12</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggrepel-gambiarra-1.png" width="624" /></p>
 </div>
@@ -2969,43 +2977,40 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>2</span><span class='op'>)</span>
-<span class='va'>d</span> <span class='op'>&lt;-</span> <span class='fu'>purrr</span><span class='fu'>::</span><span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span>
-  <span class='va'>letters</span>,
-  <span class='op'>~</span> <span class='fu'>tibble</span><span class='fu'>::</span><span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>
-      idx <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>400</span>,
-      value <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/cumsum.html'>cumsum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Uniform.html'>runif</a></span><span class='op'>(</span><span class='fl'>400</span>, <span class='op'>-</span><span class='fl'>1</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>,
-      type <span class='op'>=</span> <span class='va'>.</span>,
-      flag <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sample.html'>sample</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>TRUE</span>, <span class='cn'>FALSE</span><span class='op'>)</span>, size <span class='op'>=</span> <span class='fl'>400</span>, replace <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-    <span class='op'>)</span>
-<span class='op'>)</span>
-<span class='va'>d</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>idx</span>, <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>type</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>2</span><span class='op'>)</span></span>
+<span><span class='va'>d</span> <span class='op'>&lt;-</span> <span class='fu'>purrr</span><span class='fu'>::</span><span class='fu'><a href='https://purrr.tidyverse.org/reference/map_dfr.html'>map_dfr</a></span><span class='op'>(</span></span>
+<span>  <span class='va'>letters</span>,</span>
+<span>  <span class='op'>~</span> <span class='fu'>tibble</span><span class='fu'>::</span><span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
+<span>      idx <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>400</span>,</span>
+<span>      value <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/cumsum.html'>cumsum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Uniform.html'>runif</a></span><span class='op'>(</span><span class='fl'>400</span>, <span class='op'>-</span><span class='fl'>1</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>,</span>
+<span>      type <span class='op'>=</span> <span class='va'>.</span>,</span>
+<span>      flag <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sample.html'>sample</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>TRUE</span>, <span class='cn'>FALSE</span><span class='op'>)</span>, size <span class='op'>=</span> <span class='fl'>400</span>, replace <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span>    <span class='op'>)</span></span>
+<span><span class='op'>)</span></span>
+<span><span class='va'>d</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>idx</span>, <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>type</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/gghighlight-1.png" width="624" /></p>
 </div>
 <p>Eu posso filtrar?</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>d</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>type</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"g"</span>, <span class='st'>"s"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>idx</span>, <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>type</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>d</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>type</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"g"</span>, <span class='st'>"s"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>idx</span>, <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>type</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/gghighlight-2-1.png" width="624" /></p>
 </div>
 <p>A solução é usar o <code>{gghighlight}</code>:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/yutannihilation/gghighlight/'>gghighlight</a></span><span class='op'>)</span>
-<span class='va'>d</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>idx</span>, <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>type</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/gghighlight/man/gghighlight.html'>gghighlight</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>&gt;=</span> <span class='fl'>20</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://yutannihilation.github.io/gghighlight/'>gghighlight</a></span><span class='op'>)</span></span>
+<span><span class='va'>d</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>idx</span>, <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>type</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://yutannihilation.github.io/gghighlight/reference/gghighlight.html'>gghighlight</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>&gt;=</span> <span class='fl'>20</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/gghighlight-3-1.png" width="624" /></p>
 </div>
@@ -3014,12 +3019,11 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/daattali/ggExtra'>ggExtra</a></span><span class='op'>)</span>
-<span class='va'>plot</span> <span class='op'>&lt;-</span> <span class='va'>mpg</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> 
-<span class='fu'><a href='https://rdrr.io/pkg/ggExtra/man/ggMarginal.html'>ggMarginal</a></span><span class='op'>(</span><span class='va'>plot</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/daattali/ggExtra'>ggExtra</a></span><span class='op'>)</span></span>
+<span><span class='va'>plot</span> <span class='op'>&lt;-</span> <span class='va'>mpg</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>hwy</span>, <span class='va'>cty</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"steelblue"</span><span class='op'>)</span> </span>
+<span><span class='fu'><a href='https://rdrr.io/pkg/ggExtra/man/ggMarginal.html'>ggMarginal</a></span><span class='op'>(</span><span class='va'>plot</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggExtra-1.png" width="624" /></p>
 </div>
@@ -3028,74 +3032,76 @@ Figure 2: Fundamentals of Data Visualization
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://wilkelab.org/ggridges/'>ggridges</a></span><span class='op'>)</span>
-<span class='va'>diamonds</span> <span class='op'>%&gt;%</span> 
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>price</span>, <span class='va'>cut</span>, fill <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>cut</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://wilkelab.org/ggridges/reference/geom_density_ridges.html'>geom_density_ridges</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_dollar.html'>label_dollar</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_brewer.html'>scale_fill_brewer</a></span><span class='op'>(</span>palette <span class='op'>=</span> <span class='st'>"Set1"</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://wilkelab.org/ggridges/'>ggridges</a></span><span class='op'>)</span></span>
+<span><span class='va'>diamonds</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span><span class='va'>price</span>, <span class='va'>cut</span>, fill <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>cut</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://wilkelab.org/ggridges/reference/geom_density_ridges.html'>geom_density_ridges</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/label_dollar.html'>label_dollar</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_brewer.html'>scale_fill_brewer</a></span><span class='op'>(</span>palette <span class='op'>=</span> <span class='st'>"Set1"</span><span class='op'>)</span></span></code></pre>
 </div>
 <p><img src="3-Visualizacao_Dados_files/figure-html5/ggridges-1.png" width="624" /></p>
 </div>
 <h2 id="ambiente">Ambiente</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/utils/sessionInfo.html'>sessionInfo</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code>R version 4.1.0 (2021-05-18)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Big Sur 11.4
+<pre><code>R version 4.2.2 (2022-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.1 LTS
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so
 
 locale:
-[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods  
 [7] base     
 
 other attached packages:
- [1] ggridges_0.5.3    ggExtra_0.9       gghighlight_0.3.2
- [4] ggrepel_0.9.1     patchwork_1.1.1   forcats_0.5.1    
- [7] plotly_4.9.4.1    repurrrsive_1.0.0 ggplot2_3.3.5    
-[10] stringr_1.4.0     tidyr_1.1.3       janitor_2.1.0    
-[13] dplyr_1.0.7       readr_1.4.0       magrittr_2.0.1   
-[16] tibble_3.1.2     
+ [1] ggridges_0.5.4    ggExtra_0.10.0    gghighlight_0.4.0
+ [4] ggrepel_0.9.3     patchwork_1.1.2   forcats_1.0.0    
+ [7] plotly_4.10.1     repurrrsive_1.1.0 ggplot2_3.4.1    
+[10] stringr_1.5.0     tidyr_1.3.0       janitor_2.2.0    
+[13] dplyr_1.1.0       readr_2.1.4       magrittr_2.0.3   
+[16] tibble_3.1.8     
 
 loaded via a namespace (and not attached):
- [1] nlme_3.1-152       lubridate_1.7.10   bit64_4.0.5       
- [4] RColorBrewer_1.1-2 httr_1.4.2         rprojroot_2.0.2   
- [7] tools_4.1.0        bslib_0.2.5.1      utf8_1.2.1        
-[10] R6_2.5.0           DBI_1.1.1          lazyeval_0.2.2    
-[13] mgcv_1.8-35        colorspace_2.0-2   withr_2.4.2       
-[16] tidyselect_1.1.1   downlit_0.2.1      bit_4.0.4         
-[19] compiler_4.1.0     textshaping_0.3.5  cli_3.0.0         
-[22] labeling_0.4.2     bookdown_0.22      sass_0.4.0        
-[25] scales_1.1.1       systemfonts_1.0.2  digest_0.6.27     
-[28] rmarkdown_2.9      jpeg_0.1-8.1       pkgconfig_2.0.3   
-[31] htmltools_0.5.1.1  dbplyr_2.1.1       fastmap_1.1.0     
-[34] highr_0.9          htmlwidgets_1.5.3  rlang_0.4.11      
-[37] rstudioapi_0.13    RSQLite_2.2.7      shiny_1.6.0       
-[40] jquerylib_0.1.4    farver_2.1.0       generics_0.1.0    
-[43] jsonlite_1.7.2     crosstalk_1.1.1    distill_1.2       
-[46] Matrix_1.3-4       Rcpp_1.0.6         munsell_0.5.0     
-[49] fansi_0.5.0        lifecycle_1.0.0    stringi_1.6.2     
-[52] yaml_2.2.1         snakecase_0.11.0   plyr_1.8.6        
-[55] grid_4.1.0         blob_1.2.1         promises_1.2.0.1  
-[58] crayon_1.4.1       miniUI_0.1.1.1     lattice_0.20-44   
-[61] splines_4.1.0      hms_1.1.0          knitr_1.33        
-[64] pillar_1.6.1       glue_1.4.2         evaluate_0.14     
-[67] data.table_1.14.0  httpuv_1.6.1       png_0.1-7         
-[70] vctrs_0.3.8        gtable_0.3.0       purrr_0.3.4       
-[73] assertthat_0.2.1   cachem_1.0.5       xfun_0.24         
-[76] mime_0.11          xtable_1.8-4       later_1.2.0       
-[79] ragg_1.1.3         viridisLite_0.4.0  memoise_2.0.0     
-[82] ellipsis_0.3.2    </code></pre>
+ [1] nlme_3.1-160       lubridate_1.9.2    bit64_4.0.5       
+ [4] RColorBrewer_1.1-3 httr_1.4.4         rprojroot_2.0.3   
+ [7] tools_4.2.2        bslib_0.4.2        utf8_1.2.3        
+[10] R6_2.5.1           DBI_1.1.3          lazyeval_0.2.2    
+[13] mgcv_1.8-41        colorspace_2.1-0   withr_2.5.0       
+[16] tidyselect_1.2.0   downlit_0.4.2      bit_4.0.5         
+[19] compiler_4.2.2     cli_3.6.0          labeling_0.4.2    
+[22] bookdown_0.32      sass_0.4.5         scales_1.2.1      
+[25] digest_0.6.31      rmarkdown_2.20     pkgconfig_2.0.3   
+[28] htmltools_0.5.4    dbplyr_2.3.0       fastmap_1.1.0     
+[31] highr_0.10         htmlwidgets_1.6.1  rlang_1.0.6       
+[34] rstudioapi_0.14    RSQLite_2.3.0      shiny_1.7.4       
+[37] jquerylib_0.1.4    farver_2.1.1       generics_0.1.3    
+[40] jsonlite_1.8.4     crosstalk_1.2.0    vroom_1.6.1       
+[43] distill_1.5        Matrix_1.5-1       Rcpp_1.0.10       
+[46] munsell_0.5.0      fansi_1.0.4        lifecycle_1.0.3   
+[49] stringi_1.7.12     yaml_2.3.7         snakecase_0.11.0  
+[52] grid_4.2.2         blob_1.2.3         promises_1.2.0.1  
+[55] parallel_4.2.2     crayon_1.5.2       miniUI_0.1.1.1    
+[58] lattice_0.20-45    splines_4.2.2      hms_1.1.2         
+[61] knitr_1.42         pillar_1.8.1       glue_1.6.2        
+[64] evaluate_0.20      data.table_1.14.8  png_0.1-8         
+[67] vctrs_0.5.2        tzdb_0.3.0         httpuv_1.6.9      
+[70] gtable_0.3.1       purrr_1.0.1        assertthat_0.2.1  
+[73] cachem_1.0.6       xfun_0.37          mime_0.12         
+[76] xtable_1.8-4       later_1.3.0        viridisLite_0.4.1 
+[79] memoise_2.0.1      timechange_0.2.0   ellipsis_0.3.2    </code></pre>
 </div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
@@ -3128,8 +3134,11 @@ loaded via a namespace (and not attached):
 <!--/radix_placeholder_appendices-->
 <!--radix_placeholder_navigation_after_body-->
 <div class="distill-site-nav distill-site-footer">
-<p>© Copyright 2021 <a href="https://github.com/storopoli/Estatistica-Bayesiana">Jose Storopoli</a>.</p>
-<p>Content licensed under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+<p>© Copyright 2021 <a
+href="https://github.com/storopoli/Linguagem-R">Jose Storopoli</a>.</p>
+<p>Content licensed under the <a
+href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA
+4.0</a>.</p>
 </div>
 <!--/radix_placeholder_navigation_after_body-->
 
